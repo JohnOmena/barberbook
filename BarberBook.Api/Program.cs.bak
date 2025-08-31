@@ -1,0 +1,103 @@
+using System.Text.Json.Serialization;
+using BarberBook.Api.Extensions;
+using BarberBook.Api.Endpoints;
+using BarberBook.Api.Filters;
+using BarberBook.Api.Middleware;
+using BarberBook.Api.Seed;
+using BarberBook.Application.Abstractions;
+using BarberBook.Application.Services;
+using BarberBook.Application.DTOs;
+using BarberBook.Application.Validations;
+using BarberBook.Infrastructure;
+using FluentValidation;
+using Serilog;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Serilog (console + rolling file)
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .WriteTo.Console()
+    .WriteTo.File("logs/app-.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+// Add services to the container.
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+// CORS: allow http://localhost:* 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Localhost", p => p
+        .SetIsOriginAllowed(origin =>
+        {
+            try { var u = new Uri(origin); return u.Scheme == "http" && u.Host == "localhost"; }
+            catch { return false; }
+        })
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
+});
+
+// DI: Infrastructure + Application services
+builder.Services.AddInfrastructurePersistence(builder.Configuration);
+builder.Services.AddScoped<ISlotCalculator, SlotCalculator>();
+builder.Services.AddScoped<IValidator<CreateBookingRequest>, CreateBookingRequestValidator>();
+builder.Services.AddScoped<BarberBook.Application.UseCases.GetServicesUseCase>();
+builder.Services.AddScoped<BarberBook.Application.UseCases.GetSlotsUseCase>();
+builder.Services.AddScoped<BarberBook.Application.UseCases.CreateBookingUseCase>();
+builder.Services.AddScoped<BarberBook.Application.UseCases.CancelBookingUseCase>();
+builder.Services.AddScoped<BarberBook.Application.UseCases.GetDayStatusUseCase>();
+builder.Services.AddScoped<BarberBook.Application.UseCases.UpdateAppointmentStatusUseCase>();
+
+var app = builder.Build();
+
+// Exception handling
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// CORS
+app.UseCors("Localhost");
+
+await app.MigrateAsync();
+var seedEnabled = builder.Configuration.GetValue<bool>("Seed:Enabled", true);
+if (seedEnabled)
+{
+    await SeedData.SeedAsync(app);
+}
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "BarberBook API v1");
+    });
+}
+
+app.UseHttpsRedirection();
+
+// Basic auth placeholder for /admin/*
+app.UseWhen(ctx => ctx.Request.Path.StartsWithSegments("/admin"), appBuilder =>
+{
+    appBuilder.UseMiddleware<BasicAuthMiddleware>();
+});
+
+// Health endpoint
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+
+// API endpoints
+app.MapServicesEndpoints();
+app.MapSlotsEndpoints();
+app.MapBookingEndpoints();
+app.MapStatusEndpoints();
+
+app.Run();
+
+public partial class Program { }

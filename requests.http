@@ -1,0 +1,41 @@
+@host = http://localhost:5000
+
+### Listar serviços
+GET {{host}}/api/services
+Accept: application/json
+
+### Consultar slots
+@serviceId = 00000000-0000-0000-0000-000000000000
+GET {{host}}/api/slots?serviceId={{serviceId}}&date=2025-08-30
+Accept: application/json
+
+### Criar agendamento
+POST {{host}}/api/book
+Content-Type: application/json
+
+{
+  "tenantId": "11111111-1111-1111-1111-111111111111",
+  "serviceId": "{{serviceId}}",
+  "startUtc": "2025-08-30T12:00:00Z",
+  "clientName": "Cliente Teste",
+  "clientContact": "(11) 99999-0000"
+}
+
+### Cancelar agendamento
+POST {{host}}/api/cancel
+Content-Type: application/json
+
+{
+  "appointmentId": "22222222-2222-2222-2222-222222222222",
+  "reason": "Cliente solicitou cancelamento"
+}
+
+### Status do dia
+GET {{host}}/api/status-dia?date=2025-08-30
+Accept: application/json
+
+### Atualizar status (CheckIn, InService, Done, NoShow, Cancelled)
+@appointmentId = 33333333-3333-3333-3333-333333333333
+POST {{host}}/api/appointments/{{appointmentId}}/status/CheckIn
+X-User: admin
+

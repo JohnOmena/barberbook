@@ -1,0 +1,12 @@
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.AssemblyInfoInputs.cache
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.AssemblyInfo.cs
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.csproj.CoreCompileInputs.cache
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.sourcelink.json
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\bin\Debug\net9.0\BarberBook.Domain.deps.json
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\bin\Debug\net9.0\BarberBook.Domain.dll
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\bin\Debug\net9.0\BarberBook.Domain.pdb
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.dll
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\refint\BarberBook.Domain.dll
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.pdb
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\ref\BarberBook.Domain.dll

@@ -1,0 +1,127 @@
+@page
+@model BarberBook.Web.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Painel";
+}
+<style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:0; padding:12px; }
+    header { display:flex; gap:8px; align-items:center; justify-content:space-between; }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    input[type=date], select, button { padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; background:var(--bg,#fff); }
+    button.primary { background:#2563eb; color:#fff; border:none; }
+    .cards { margin-top:12px; display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:10px; }
+    .card { border:1px solid #e2e8f0; border-radius:12px; padding:12px; background:var(--bg,#fff); box-shadow:0 1px 2px rgba(0,0,0,.05); }
+    .muted { color:#64748b; font-size:12px; }
+    .title { font-weight:600; margin-bottom:6px; }
+    .actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .chip { display:inline-block; padding:3px 8px; border-radius:999px; font-size:12px; background:#f1f5f9; }
+    .footer { margin-top:16px; font-weight:600; }
+</style>
+
+<header class="row">
+    <div class="row">
+        <label for="date">Data:</label>
+        <input id="date" type="date" />
+        <button id="btnPrev">◀</button>
+        <button id="btnNext">▶</button>
+        <button id="btnReload">Atualizar</button>
+    </div>
+    <form method="post" asp-page-handler="Logout">
+        <button type="submit">Sair</button>
+    </form>
+    
+    <script>document.addEventListener('DOMContentLoaded',()=>{const d=new Date();document.getElementById('date').value=d.toISOString().slice(0,10);});</script>
+</header>
+
+<section class="row" style="margin-top:10px">
+    <label for="svc">Encaixe:</label>
+    <select id="svc"></select>
+    <button class="primary" id="btnEncaixe">Criar no próximo slot</button>
+    <span id="msg" class="muted"></span>
+</section>
+
+<section id="list" class="cards"></section>
+<div class="footer" id="totals"></div>
+
+<script>
+    const API_BASE = '@Model.ApiBaseUrl';
+    const TENANT_ID = '@Model.TenantId';
+    const statusChip = s => `<span class="chip">${s}</span>`;
+
+    async function fetchJson(url, options={}) {
+        const res = await fetch(url, { headers: { 'Content-Type':'application/json' }, ...options });
+        if(!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+        return await res.json();
+    }
+
+    function fmtTime(iso){ const d = new Date(iso); return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+
+    async function loadServices(){
+        const select = document.getElementById('svc');
+        select.innerHTML = '<option>Carregando...</option>';
+        const data = await fetchJson(`${API_BASE}/api/services`);
+        select.innerHTML = data.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+    }
+
+    async function loadDay(){
+        const date = document.getElementById('date').value;
+        const data = await fetchJson(`${API_BASE}/api/status-dia?date=${date}`);
+        const list = document.getElementById('list');
+        list.innerHTML = (data.items||[]).map(it=>`
+            <div class='card'>
+                <div class='title'>${fmtTime(it.startsAt)} – ${it.serviceName}</div>
+                <div class='muted'>${it.clientName || ''}</div>
+                <div>${statusChip(it.status)}</div>
+                <div class='actions'>
+                    <button onclick="updateStatus('${it.id}','CheckIn')">Check‑in</button>
+                    <button onclick="updateStatus('${it.id}','InService')">Iniciar</button>
+                    <button onclick="updateStatus('${it.id}','Done')">Finalizar</button>
+                    <button onclick="updateStatus('${it.id}','NoShow')">No‑show</button>
+                    <button onclick="cancel('${it.id}')">Cancelar</button>
+                </div>
+            </div>`).join('');
+        document.getElementById('totals').textContent = `Total: ${data.totals} | Caixa: R$ ${Number(data.cash).toFixed(2)}`;
+    }
+
+    async function cancel(id){
+        try{
+            await fetchJson(`${API_BASE}/api/cancel`, { method:'POST', body: JSON.stringify({ appointmentId: id, reason: 'admin' }) });
+            await loadDay();
+        }catch(e){ alert('Erro ao cancelar: '+e.message); }
+    }
+
+    async function updateStatus(id, status){
+        try{
+            const res = await fetch(`${API_BASE}/api/appointments/${id}/status/${status}`, { method:'POST', headers: { 'X-User': '@Model.Username' } });
+            if(!res.ok) throw new Error(await res.text());
+            await loadDay();
+        }catch(e){ alert('Falha ao atualizar status (talvez endpoint não exista ainda): '+e.message); }
+    }
+
+    async function encaixe(){
+        const svcId = document.getElementById('svc').value;
+        const date = document.getElementById('date').value;
+        const msg = document.getElementById('msg');
+        try{
+            const slots = await fetchJson(`${API_BASE}/api/slots?serviceId=${svcId}&date=${date}`);
+            if(!slots.length){ msg.textContent = 'Sem slots disponíveis'; return; }
+            const slot = slots[0];
+            const name = prompt('Nome do cliente:') || 'Cliente';
+            const contact = prompt('Contato:') || '';
+            const body = { tenantId: TENANT_ID, serviceId: svcId, startUtc: slot.startUtc, clientName: name, clientContact: contact };
+            await fetchJson(`${API_BASE}/api/book`, { method:'POST', body: JSON.stringify(body) });
+            msg.textContent = 'Agendado!';
+            await loadDay();
+        }catch(e){ alert('Falha ao criar encaixe: '+e.message); }
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+        const date = document.getElementById('date');
+        document.getElementById('btnReload').addEventListener('click', loadDay);
+        document.getElementById('btnEncaixe').addEventListener('click', encaixe);
+        document.getElementById('btnPrev').addEventListener('click',()=>{ const d=new Date(date.value); d.setDate(d.getDate()-1); date.value=d.toISOString().slice(0,10); loadDay();});
+        document.getElementById('btnNext').addEventListener('click',()=>{ const d=new Date(date.value); d.setDate(d.getDate()+1); date.value=d.toISOString().slice(0,10); loadDay();});
+        loadServices().then(loadDay);
+    });
+</script>

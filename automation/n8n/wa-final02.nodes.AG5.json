@@ -1,0 +1,3 @@
+{"nodes":[
+{"name":"WAHA_ServiceNotFound_AG","type":"n8n-nodes-base.httpRequest","typeVersion":1,"parameters":{"method":"POST","url":"http://waha:3000/api/sendText","jsonParameters":true,"headerParametersJson":"{\"Content-Type\":\"application/json\"}","bodyParametersJson":"{\"session\":\"{{$json.session}}\",\"chatId\":\"{{$json.chatId}}\",\"text\":\"Nao encontrei esse servico. Envie o nome exato.\",\"reply_to\":\"{{$json.messageId}}\"}"},"position":[640,120]}
+]}

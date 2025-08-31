@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "wjMJXY9VBSda+/5jti2z3ev00F8OyK6CO4ZUVRO0Upc=",
+  "Source": "BarberBook.Api",
+  "BasePath": "_content/BarberBook.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

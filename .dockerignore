@@ -1,0 +1,7 @@
+﻿**/bin/
+**/obj/
+.git/
+.vs/
+.vscode/
+node_modules/
+automation/n8n/*.json

@@ -1,0 +1,16 @@
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\bin\Debug\net9.0\BarberBook.Application.deps.json
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\bin\Debug\net9.0\BarberBook.Application.dll
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\bin\Debug\net9.0\BarberBook.Application.pdb
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\bin\Debug\net9.0\BarberBook.Domain.dll
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\bin\Debug\net9.0\BarberBook.Domain.pdb
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.csproj.AssemblyReference.cache
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.AssemblyInfoInputs.cache
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.AssemblyInfo.cs
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.csproj.CoreCompileInputs.cache
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.sourcelink.json
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBo.99EDA307.Up2Date
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.dll
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\refint\BarberBook.Application.dll
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.pdb
+C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\ref\BarberBook.Application.dll
