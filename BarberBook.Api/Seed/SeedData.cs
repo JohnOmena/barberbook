@@ -75,6 +75,35 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
+        // Sample appointments for today (only if none exist) to facilitar testes/UX
+        var today = DateTime.UtcNow.Date;
+        var anyToday = await db.Appointments.AnyAsync(a => a.StartsAt >= today && a.StartsAt < today.AddDays(1));
+        if (!anyToday)
+        {
+            var svc = await db.Services.Where(s => s.TenantId == tenant.Id && s.Active).OrderBy(s => s.Name).FirstOrDefaultAsync();
+            if (svc is not null)
+            {
+                var times = new[] { new TimeSpan(12,0,0), new TimeSpan(13,0,0), new TimeSpan(14,0,0) };
+                foreach (var ts in times)
+                {
+                    var sUtc = DateTime.SpecifyKind(today.Add(ts), DateTimeKind.Utc);
+                    var eUtc = sUtc.AddMinutes(svc.DurationMin + svc.BufferMin);
+                    db.Appointments.Add(new Appointment(
+                        id: Guid.NewGuid(),
+                        tenantId: tenant.Id,
+                        professionalId: prof.Id,
+                        serviceId: svc.Id,
+                        startsAtUtc: sUtc,
+                        endsAtUtc: eUtc,
+                        status: BarberBook.Domain.Enums.AppointmentStatus.Confirmed,
+                        clientName: $"Cliente {ts.Hours:00}:{ts.Minutes:00}",
+                        clientContact: "+5511999999999",
+                        createdAtUtc: DateTime.UtcNow));
+                }
+                await db.SaveChangesAsync();
+            }
+        }
+
         // Availabilities Mon-Sat (1..6) 09:00–18:00
         var start = new TimeSpan(9, 0, 0);
         var end = new TimeSpan(18, 0, 0);

@@ -23,7 +23,10 @@ public sealed class GetDayStatusUseCase
 
     public Task<DayStatusResponse> HandleAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
-        var dayStart = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0, DateTimeKind.Utc);
+        // Considera o dia no fuso local do servidor (para alinhar com a exibição do front)
+        var tz = TimeZoneInfo.Local;
+        var localStart = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0, DateTimeKind.Unspecified);
+        var dayStart = TimeZoneInfo.ConvertTimeToUtc(localStart, tz);
         var dayEnd = dayStart.AddDays(1);
 
         var appts = _appointments.Query()
@@ -38,14 +41,14 @@ public sealed class GetDayStatusUseCase
         {
             var svcName = services.TryGetValue(a.ServiceId, out var svc) ? svc.Name : "";
             var price = services.TryGetValue(a.ServiceId, out svc) ? svc.Price : 0m;
-            var item = new DayStatusItemDto(a.Id, a.StartsAt, svcName, a.ClientName, a.Status, price);
+            var item = new DayStatusItemDto(a.Id, a.StartsAt, a.EndsAt, svcName, a.ClientName, a.ClientContact, a.Status, price);
             items.Add(item);
             if (a.Status == AppointmentStatus.Done)
                 cash += price;
         }
 
-        var response = new DayStatusResponse(items, items.Count, cash);
+        var validCount = items.Count(i => i.Status != AppointmentStatus.Cancelled);
+        var response = new DayStatusResponse(items, validCount, cash);
         return Task.FromResult(response);
     }
 }
-

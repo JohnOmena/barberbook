@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "MpAeU+AVmqE=",
+  "dgSpecHash": "bgb+6JvZJ4E=",
   "success": true,
-  "projectFilePath": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.UnitTests\\BarberBook.UnitTests.csproj",
+  "projectFilePath": "C:\\dev\\barberbook\\BarberBook.UnitTests\\BarberBook.UnitTests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\john_\\.nuget\\packages\\coverlet.collector\\6.0.2\\coverlet.collector.6.0.2.nupkg.sha512",
     "C:\\Users\\john_\\.nuget\\packages\\fluentvalidation\\11.11.0\\fluentvalidation.11.11.0.nupkg.sha512",

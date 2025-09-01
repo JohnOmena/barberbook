@@ -3,125 +3,352 @@
 @{
     ViewData["Title"] = "Painel";
 }
-<style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:0; padding:12px; }
-    header { display:flex; gap:8px; align-items:center; justify-content:space-between; }
-    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-    input[type=date], select, button { padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; background:var(--bg,#fff); }
-    button.primary { background:#2563eb; color:#fff; border:none; }
-    .cards { margin-top:12px; display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:10px; }
-    .card { border:1px solid #e2e8f0; border-radius:12px; padding:12px; background:var(--bg,#fff); box-shadow:0 1px 2px rgba(0,0,0,.05); }
-    .muted { color:#64748b; font-size:12px; }
-    .title { font-weight:600; margin-bottom:6px; }
-    .actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-    .chip { display:inline-block; padding:3px 8px; border-radius:999px; font-size:12px; background:#f1f5f9; }
-    .footer { margin-top:16px; font-weight:600; }
-</style>
 
-<header class="row">
-    <div class="row">
-        <label for="date">Data:</label>
-        <input id="date" type="date" />
-        <button id="btnPrev">◀</button>
-        <button id="btnNext">▶</button>
-        <button id="btnReload">Atualizar</button>
+@section Head {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
+
+<div class="page admin">
+  <div class="toolbar">
+    <div class="row row-top">
+      <label for="date" class="muted">Data</label>
+      <input id="date" type="date" />
+      <button id="btnPrev" class="ghost" type="button" title="Dia anterior">&lsaquo;</button>
+      <button id="btnNext" class="ghost" type="button" title="Próximo dia">&rsaquo;</button>
     </div>
-    <form method="post" asp-page-handler="Logout">
-        <button type="submit">Sair</button>
-    </form>
-    
-    <script>document.addEventListener('DOMContentLoaded',()=>{const d=new Date();document.getElementById('date').value=d.toISOString().slice(0,10);});</script>
-</header>
+    <div class="row row-mid">
+      <div class="row" style="gap:8px">
+        <label for="svc" class="muted">Encaixe</label>
+        <select id="svc"></select>
+        <button class="primary" id="btnEncaixe" type="button">Criar no próximo slot</button>
+        <span id="msg" class="muted"></span>
+      </div>
+      <div class="row">
+        <button id="btnReload" class="ghost" type="button">Atualizar</button>
+      </div>
+    </div>
+  </div>
 
-<section class="row" style="margin-top:10px">
-    <label for="svc">Encaixe:</label>
-    <select id="svc"></select>
-    <button class="primary" id="btnEncaixe">Criar no próximo slot</button>
-    <span id="msg" class="muted"></span>
-</section>
+  <div id="list" class="cards">
+    <div class="card sk-card skeleton"></div>
+    <div class="card sk-card skeleton"></div>
+    <div class="card sk-card skeleton"></div>
+  </div>
+  <div class="footer" id="totals"></div>
+  <button class="fab" id="fabEncaixe" type="button" aria-label="Criar encaixe">＋ Encaixe</button>
+</div>
 
-<section id="list" class="cards"></section>
-<div class="footer" id="totals"></div>
+<div id="backdrop" class="backdrop"></div>
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <h3 id="modalTitle" class="title">Agendar</h3>
+  <div class="row">
+    <label for="mSvc" class="muted">Serviço</label>
+    <select id="mSvc"></select>
+  </div>
+  <div class="row">
+    <label for="mSlots" class="muted">Horário</label>
+      <select id="mSlots"></select>
+      <input id="mTime" type="time" step="900" style="display:none" />
+  </div>
+  <div class="row">
+    <input id="mName" placeholder="Nome do cliente" />
+    <input id="mContact" placeholder="Contato" />
+  </div>
+  <footer>
+    <button class="ghost" id="mCancel" type="button">Fechar</button>
+    <button class="primary" id="mConfirm" type="button">Confirmar</button>
+  </footer>
+  <input type="hidden" id="mMode" value="create" />
+  <input type="hidden" id="mApptId" />
+</div>
 
 <script>
     const API_BASE = '@Model.ApiBaseUrl';
-    const TENANT_ID = '@Model.TenantId';
-    const statusChip = s => `<span class="chip">${s}</span>`;
+    // Corrige API quando configurada com nome do serviço Docker (barberbook-api), usando host local
+    let apiBase = API_BASE;
+    try {
+        const u = new URL(API_BASE);
+        if (u.hostname === 'barberbook-api') {
+            apiBase = `${location.protocol}//${location.hostname}:8080`;
+        }
+    } catch { apiBase = API_BASE; }
+    let TENANT_ID = '@Model.TenantId';
+    const toast = (msg)=>{
+        try{ document.getElementById('modal')?.classList.remove('show'); document.getElementById('backdrop')?.classList.remove('show'); }catch{}
+        const el=document.getElementById('toast');
+        el.textContent=msg; el.classList.add('show');
+        setTimeout(()=>el.classList.remove('show'), 2500);
+    };
+    const statusBadge = s => {
+        const map = { Confirmed:'info', Pending:'warn', CheckIn:'info', InService:'info', Done:'success', NoShow:'danger', Cancelled:'danger' };
+        const cls = map[s]||'info';
+        return `<span class="badge ${cls}">${s}</span>`;
+    };
 
     async function fetchJson(url, options={}) {
         const res = await fetch(url, { headers: { 'Content-Type':'application/json' }, ...options });
-        if(!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-        return await res.json();
+        const txt = await res.text();
+        if(!res.ok) throw new Error(txt || `${res.status}`);
+        if(!txt) return null;
+        try { return JSON.parse(txt); } catch { return null; }
     }
 
     function fmtTime(iso){ const d = new Date(iso); return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+    const DURATION_OVERRIDES = (()=>{ const m=new Map(); const put=(n,min)=>m.set((n||'').toLowerCase(),min);
+        put('Degrade na zero',30); put('Degrade navalhado',40); put('Corte social máquina e tesoura',20); put('Corte só máquina',20);
+        put('corte na tesoura',30); put('Barba',20); put('Pé de cabelo e sobrancelha',10); put('Cabelo e barba',50); return m; })();
+    const SERVICES_BY_ID = new Map(); const SERVICES_BY_NAME = new Map();
+    function getDurationFor(serviceId, serviceName){ if(serviceId&&SERVICES_BY_ID.has(serviceId)) return SERVICES_BY_ID.get(serviceId).durationMin;
+        const key=(serviceName||'').toLowerCase(); if(DURATION_OVERRIDES.has(key)) return DURATION_OVERRIDES.get(key);
+        if(SERVICES_BY_NAME.has(key)) return SERVICES_BY_NAME.get(key).durationMin; return null; }
+    function addMinutesIso(iso, minutes){ const d=new Date(iso); d.setMinutes(d.getMinutes()+(minutes||0)); return d.toISOString(); }
+    function toUtcIso(dateStr, timeStr){
+        if(!dateStr || !timeStr) return '';
+        const [y,m,d] = dateStr.split('-').map(Number);
+        const [hh,mm] = (timeStr||'00:00').split(':').map(Number);
+        // Converte hora local selecionada para o instante UTC correto
+        // new Date(y,m-1,d,hh,mm) já representa o horário local; toISOString() devolve o UTC equivalente
+        const local = new Date(y, (m||1)-1, d||1, hh||0, mm||0, 0);
+        return local.toISOString();
+    }
+    function ensureManualTimeFallback(){
+        const mSlots = document.getElementById('mSlots'); const mTime = document.getElementById('mTime');
+        if(!mSlots || !mTime) return;
+        try{
+            const opts = mSlots.options || [];
+            const noSlots = (opts.length===0) || (opts.length===1 && opts[0].disabled);
+            if(noSlots){
+                mSlots.style.display='none'; mTime.style.display='';
+                const date = document.getElementById('date').value;
+                const now = new Date();
+                const selectedDate = new Date(date+'T00:00:00');
+                if(selectedDate.toDateString() === now.toDateString()){
+                    // Ajusta para agora + 30min e arredonda para o próximo quarto de hora
+                    const future = new Date(now.getTime() + 30*60000);
+                    const step = 15;
+                    const rem = future.getMinutes() % step;
+                    if(rem !== 0){ future.setMinutes(future.getMinutes() + (step - rem)); }
+                    future.setSeconds(0); future.setMilliseconds(0);
+                    mTime.value = future.toTimeString().slice(0,5);
+                } else {
+                    mTime.value = '09:00';
+                }
+            } else {
+                mSlots.style.display=''; mTime.style.display='none';
+            }
+        }catch{}
+    }
 
     async function loadServices(){
         const select = document.getElementById('svc');
         select.innerHTML = '<option>Carregando...</option>';
-        const data = await fetchJson(`${API_BASE}/api/services`);
+        const data = await fetchJson(`${apiBase}/api/services`);
+        SERVICES_BY_ID.clear(); SERVICES_BY_NAME.clear(); data.forEach(s=>{ SERVICES_BY_ID.set(s.id,s); SERVICES_BY_NAME.set((s.name||'').toLowerCase(), s); });
         select.innerHTML = data.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+        // modal services
+        const mSvc = document.getElementById('mSvc');
+        mSvc.innerHTML = select.innerHTML;
     }
 
     async function loadDay(){
         const date = document.getElementById('date').value;
-        const data = await fetchJson(`${API_BASE}/api/status-dia?date=${date}`);
+        const data = await fetchJson(`${apiBase}/api/status-dia?date=${date}`);
         const list = document.getElementById('list');
-        list.innerHTML = (data.items||[]).map(it=>`
+        const now = new Date();
+        const html = (data.items||[]).map(it=>{
+            const st = it.status;
+            const startDate = new Date(it.startsAt);
+            const endLabel = it.endsAt ? fmtTime(it.endsAt) : (function(){ const d=getDurationFor(null, it.serviceName); return d ? fmtTime(addMinutesIso(it.startsAt, d)) : ''; })();
+            const canCheckIn = (st==='Confirmed' || st==='Pending');
+            const canInService = (st==='CheckIn');
+            const canDone = (st==='InService');
+            const canNoShow = (st==='Confirmed' && now >= new Date(startDate.getTime() + 15*60000));
+            const isFinal = (st==='Done' || st==='Cancelled');
+            const canDelete = (st==='Cancelled');
+            return `
             <div class='card'>
-                <div class='title'>${fmtTime(it.startsAt)} – ${it.serviceName}</div>
-                <div class='muted'>${it.clientName || ''}</div>
-                <div>${statusChip(it.status)}</div>
-                <div class='actions'>
-                    <button onclick="updateStatus('${it.id}','CheckIn')">Check‑in</button>
-                    <button onclick="updateStatus('${it.id}','InService')">Iniciar</button>
-                    <button onclick="updateStatus('${it.id}','Done')">Finalizar</button>
-                    <button onclick="updateStatus('${it.id}','NoShow')">No‑show</button>
-                    <button onclick="cancel('${it.id}')">Cancelar</button>
-                </div>
-            </div>`).join('');
+              <div class='title'>${fmtTime(it.startsAt)} · ${it.serviceName}</div>
+              <div class='muted'>${it.clientName || ''}</div>
+              <div class='muted'>${endLabel? 'Término: '+endLabel : ''}${it.clientContact ? (endLabel? ' • ' : '') + 'Contato: '+it.clientContact : ''}</div>
+              <div style='margin-top:6px'>${statusBadge(it.status)}</div>
+              <div class='actions'>
+                ${canCheckIn ? `<button class='ghost' onclick="updateStatus('${it.id}','CheckIn')">Check‑in</button>` : ''}
+                ${canInService ? `<button class='ghost' onclick="updateStatus('${it.id}','InService')">Iniciar</button>` : ''}
+                ${canDone ? `<button class='ghost' onclick="updateStatus('${it.id}','Done')">Finalizar</button>` : ''}
+                ${canNoShow ? `<button class='ghost' onclick="updateStatus('${it.id}','NoShow')">No‑show</button>` : ''}
+                <button class='ghost' onclick="openReschedule('${it.id}','${it.serviceName}','${it.startsAt}')">Remarcar</button>
+                <button class='ghost' onclick="openEdit('${it.id}','${it.serviceName}','${it.startsAt}','${(it.clientName||'').replace(/"/g,'&quot;')}')">Editar</button>
+                ${!isFinal ? `<button class='ghost' onclick="cancel('${it.id}')">Cancelar</button>` : ''}
+                ${canDelete ? `<button class='ghost danger' onclick="deleteAppt('${it.id}')">Excluir</button>` : ''}
+              </div>
+            </div>`;
+        }).join('');
+        list.innerHTML = html;
         document.getElementById('totals').textContent = `Total: ${data.totals} | Caixa: R$ ${Number(data.cash).toFixed(2)}`;
     }
 
     async function cancel(id){
         try{
-            await fetchJson(`${API_BASE}/api/cancel`, { method:'POST', body: JSON.stringify({ appointmentId: id, reason: 'admin' }) });
+            await fetchJson(`${apiBase}/api/cancel`, { method:'POST', body: JSON.stringify({ appointmentId: id, reason: 'admin' }) });
             await loadDay();
-        }catch(e){ alert('Erro ao cancelar: '+e.message); }
+        }catch(e){ toast('Erro ao cancelar: '+e.message); }
+    }
+    async function deleteAppt(id){
+        try{
+            await fetchJson(`${apiBase}/api/appointments/${id}`, { method:'DELETE' });
+            await loadDay();
+        }catch(e){ toast('Erro ao excluir: '+e.message); }
     }
 
     async function updateStatus(id, status){
         try{
-            const res = await fetch(`${API_BASE}/api/appointments/${id}/status/${status}`, { method:'POST', headers: { 'X-User': '@Model.Username' } });
+            const res = await fetch(`${apiBase}/api/appointments/${id}/status/${status}`, { method:'POST', headers: { 'X-User': '@Model.Username' } });
             if(!res.ok) throw new Error(await res.text());
             await loadDay();
-        }catch(e){ alert('Falha ao atualizar status (talvez endpoint não exista ainda): '+e.message); }
+        }catch(e){ toast('Falha ao atualizar status: '+e.message); }
     }
 
     async function encaixe(){
-        const svcId = document.getElementById('svc').value;
-        const date = document.getElementById('date').value;
-        const msg = document.getElementById('msg');
-        try{
-            const slots = await fetchJson(`${API_BASE}/api/slots?serviceId=${svcId}&date=${date}`);
-            if(!slots.length){ msg.textContent = 'Sem slots disponíveis'; return; }
-            const slot = slots[0];
-            const name = prompt('Nome do cliente:') || 'Cliente';
-            const contact = prompt('Contato:') || '';
-            const body = { tenantId: TENANT_ID, serviceId: svcId, startUtc: slot.startUtc, clientName: name, clientContact: contact };
-            await fetchJson(`${API_BASE}/api/book`, { method:'POST', body: JSON.stringify(body) });
-            msg.textContent = 'Agendado!';
-            await loadDay();
-        }catch(e){ alert('Falha ao criar encaixe: '+e.message); }
+        openSchedule();
     }
 
-    document.addEventListener('DOMContentLoaded',()=>{
+    function closeModal(){ document.getElementById('modal').classList.remove('show'); document.getElementById('backdrop').classList.remove('show'); }
+    async function ensureServicesLoaded(){
+        const mSvc = document.getElementById('mSvc');
+        if (!mSvc.options || mSvc.options.length === 0){ await loadServices(); }
+        // preselect top-level service if any selected
+        const selTop = document.getElementById('svc')?.value;
+        if (selTop && [...mSvc.options].some(o=>o.value===selTop)) { mSvc.value = selTop; }
+    }
+    async function openSchedule(){
+        document.getElementById('mMode').value='create';
+        await ensureTenantId();
+        await ensureServicesLoaded();
+        document.getElementById('modal').classList.add('show'); document.getElementById('backdrop').classList.add('show');
+        const mSlotsInit = document.getElementById('mSlots'); if(mSlotsInit){ mSlotsInit.dataset.reset = '1'; }
+        await loadModalSlots();
+        ensureManualTimeFallback();
+    }
+    async function openReschedule(id, serviceName, startsAt){
+        document.getElementById('mMode').value='reschedule'; document.getElementById('mApptId').value=id;
+        // preselect service by name
+        const opts=[...document.getElementById('mSvc').options]; const match=opts.find(o=>o.text===serviceName); if(match){ match.selected=true; }
+        document.getElementById('mName').value=''; document.getElementById('mContact').value='';
+        document.getElementById('modal').classList.add('show'); document.getElementById('backdrop').classList.add('show');
+        await loadModalSlots();
+        ensureManualTimeFallback();
+    }
+    async function openEdit(id, serviceName, startsAt, clientName){
+        // edit as reschedule to same time with new info
+        document.getElementById('mMode').value='edit'; document.getElementById('mApptId').value=id;
+        const opts=[...document.getElementById('mSvc').options]; const match=opts.find(o=>o.text===serviceName); if(match){ match.selected=true; }
+        document.getElementById('mName').value=clientName||''; document.getElementById('mContact').value='';
+        // set slots to include current time at top
+        document.getElementById('modal').classList.add('show'); document.getElementById('backdrop').classList.add('show');
+        await loadModalSlots(/*preferCurrent*/true, startsAt);
+        ensureManualTimeFallback();
+    }
+    async function loadModalSlots(preferCurrent=false, currentIso=null){
+        const svcId = document.getElementById('mSvc').value; const date = document.getElementById('date').value;
+        const mSlots = document.getElementById('mSlots'); const mTime = document.getElementById('mTime');
+        const shouldReset = mSlots?.dataset?.reset === '1'; if(mSlots) delete mSlots.dataset.reset;
+        if(mTime){ mSlots.style.display=''; mTime.style.display='none'; }
+        const prevValue = mSlots?.value || '';
+        mSlots.innerHTML = '<option>Carregando...</option>';
+        try{
+            if(!svcId){ mSlots.innerHTML = '<option disabled>Escolha um serviço</option>'; return; }
+            const slots = await fetchJson(`${apiBase}/api/slots?serviceId=${svcId}&date=${date}`);
+            let items = slots.map(s=>({ value:s.startUtc, label: `${fmtTime(s.startUtc)} - ${fmtTime(s.endUtc||addMinutesIso(s.startUtc, getDurationFor(document.getElementById('mSvc').value, null)||0))}`}));
+            if(preferCurrent && currentIso){ items = [{value:currentIso, label: fmtTime(currentIso)+' (atual)'}].concat(items); }
+            if(items.length===0){ mSlots.innerHTML = '<option disabled>Sem horários disponíveis</option>'; return; }
+            mSlots.innerHTML = items.map(x=>`<option value="${x.value}">${x.label}</option>`).join('');
+            if(!shouldReset && prevValue && items.some(x=>x.value===prevValue)){
+                mSlots.value = prevValue;
+            } else {
+                mSlots.selectedIndex = 0;
+            }
+        }catch(e){ mSlots.innerHTML = '<option disabled>Falha ao carregar horários</option>'; }
+    }
+    document.getElementById('mSvc')?.addEventListener('change', async ()=>{ await loadModalSlots(); ensureManualTimeFallback(); });
+    document.getElementById('mCancel')?.addEventListener('click', closeModal);
+    document.getElementById('mConfirm')?.addEventListener('click', async ()=>{
+        const mode = document.getElementById('mMode').value;
+        const svcId = document.getElementById('mSvc').value; 
+        let startUtc = document.getElementById('mSlots').value;
+        const manualTimeEl = document.getElementById('mTime');
+        if(manualTimeEl && manualTimeEl.style.display !== 'none'){
+            const date = document.getElementById('date').value; const t = manualTimeEl.value;
+            startUtc = toUtcIso(date, t);
+        }
+        // Valida futuro para evitar erro "StartUtc deve ser no futuro."
+        try{ const nowUtc = new Date(); const start = new Date(startUtc); if(!(start > nowUtc)) { toast('Escolha um horário no futuro'); return; } }catch{}
+        const name = document.getElementById('mName').value||'Cliente'; const contact = document.getElementById('mContact').value||'';
+        if(!TENANT_ID){ try{ await ensureTenantId(); }catch{} }
+        if(!TENANT_ID){ toast('Falha: tenant não configurado'); return; }
+        if(!svcId){ toast('Escolha um serviço'); return; }
+        if(!startUtc){ toast('Informe um horário'); return; }
+        try{
+            if(mode==='create'){
+                const body={ tenantId:TENANT_ID, serviceId:svcId, startUtc, clientName:name, clientContact:contact };
+                await fetchJson(`${apiBase}/api/book`, { method:'POST', body: JSON.stringify(body) });
+                toast('Agendado com sucesso');
+            } else if(mode==='reschedule'){
+                const id=document.getElementById('mApptId').value;
+                await fetchJson(`${apiBase}/api/cancel`, { method:'POST', body: JSON.stringify({ appointmentId:id, reason:'reschedule' }) });
+                const body={ tenantId:TENANT_ID, serviceId:svcId, startUtc, clientName:name||'Cliente', clientContact:contact };
+                await fetchJson(`${apiBase}/api/book`, { method:'POST', body: JSON.stringify(body) });
+                toast('Remarcado');
+            } else if(mode==='edit'){
+                const id=document.getElementById('mApptId').value;
+                // edit = cancel+book no mesmo horário
+                await fetchJson(`${apiBase}/api/cancel`, { method:'POST', body: JSON.stringify({ appointmentId:id, reason:'edit' }) });
+                const body={ tenantId:TENANT_ID, serviceId:svcId, startUtc, clientName:name, clientContact:contact };
+                await fetchJson(`${apiBase}/api/book`, { method:'POST', body: JSON.stringify(body) });
+                toast('Atualizado');
+            }
+            closeModal(); await loadDay();
+        }catch(e){ toast('Falha: '+e.message); }
+    });
+
+    async function ensureTenantId(){
+        if(!TENANT_ID){
+            try{
+                const t = await fetchJson(`${apiBase}/api/tenant-default`);
+                TENANT_ID = t.id;
+            }catch{ /* ignore */ }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded',async ()=>{
+        // Move date controls from row-top to row-mid to align with others
+        try {
+            const toolbar = document.querySelector('.toolbar');
+            const rowTop = toolbar?.querySelector('.row-top');
+            const rowMid = toolbar?.querySelector('.row-mid');
+            if (rowTop && rowMid) {
+                const newRow = document.createElement('div');
+                newRow.className = 'row';
+                while (rowTop.firstChild) { newRow.appendChild(rowTop.firstChild); }
+                rowMid.insertBefore(newRow, rowMid.firstChild);
+                rowTop.remove();
+            }
+        } catch {}
+        document.body.classList.add('admin');
+        const d=new Date(); document.getElementById('date').value=d.toISOString().slice(0,10);
+        // fixa tema claro
+        document.documentElement.dataset.theme = 'light';
         const date = document.getElementById('date');
+        // Atualiza ao escolher a data no calendário
+        date?.addEventListener('change', ()=> loadDay());
+        date?.addEventListener('input', ()=> loadDay());
         document.getElementById('btnReload').addEventListener('click', loadDay);
-        document.getElementById('btnEncaixe').addEventListener('click', encaixe);
+        document.getElementById('btnEncaixe').addEventListener('click', (e)=>{ e.preventDefault(); encaixe(); });
+        document.getElementById('fabEncaixe').addEventListener('click', (e)=>{ e.preventDefault(); encaixe(); });
         document.getElementById('btnPrev').addEventListener('click',()=>{ const d=new Date(date.value); d.setDate(d.getDate()-1); date.value=d.toISOString().slice(0,10); loadDay();});
         document.getElementById('btnNext').addEventListener('click',()=>{ const d=new Date(date.value); d.setDate(d.getDate()+1); date.value=d.toISOString().slice(0,10); loadDay();});
-        loadServices().then(loadDay);
+        await ensureTenantId();
+        await loadServices();
+        await loadDay();
     });
 </script>
+<div id="toast" class="toast"></div>

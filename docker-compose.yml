@@ -60,6 +60,22 @@
     ports:
       - "${API_HOST_PORT:-8080}:8080"
 
+  barberbook-web:
+    build:
+      context: .
+      dockerfile: BarberBook.Web/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:5161
+      # Base da API para o painel. Ajuste WEB_API_BASE_URL para seu IP se for acessar do celular.
+      Api__BaseUrl: ${WEB_API_BASE_URL:-http://host.docker.internal:8080}
+      Admin__Username: ${ADMIN_USERNAME:-admin}
+      Admin__Password: ${ADMIN_PASSWORD:-admin}
+      Admin__TenantId: ${ADMIN_TENANT_ID:-}
+    depends_on:
+      - barberbook-api
+    ports:
+      - "${WEB_HOST_PORT:-5161}:5161"
+
   waha:
     image: devlikeapro/whatsapp-http-api:latest
     environment:

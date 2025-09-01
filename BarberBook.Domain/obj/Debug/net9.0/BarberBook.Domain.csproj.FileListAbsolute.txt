@@ -10,3 +10,15 @@ C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberboo
 C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\refint\BarberBook.Domain.dll
 C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.pdb
 C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Domain\obj\Debug\net9.0\ref\BarberBook.Domain.dll
+C:\dev\barberbook\BarberBook.Domain\bin\Debug\net9.0\BarberBook.Domain.deps.json
+C:\dev\barberbook\BarberBook.Domain\bin\Debug\net9.0\BarberBook.Domain.dll
+C:\dev\barberbook\BarberBook.Domain\bin\Debug\net9.0\BarberBook.Domain.pdb
+C:\dev\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\dev\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.AssemblyInfoInputs.cache
+C:\dev\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.AssemblyInfo.cs
+C:\dev\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.csproj.CoreCompileInputs.cache
+C:\dev\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.sourcelink.json
+C:\dev\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.dll
+C:\dev\barberbook\BarberBook.Domain\obj\Debug\net9.0\refint\BarberBook.Domain.dll
+C:\dev\barberbook\BarberBook.Domain\obj\Debug\net9.0\BarberBook.Domain.pdb
+C:\dev\barberbook\BarberBook.Domain\obj\Debug\net9.0\ref\BarberBook.Domain.dll

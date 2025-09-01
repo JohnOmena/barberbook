@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Nc+Evt+1nH4=",
+  "dgSpecHash": "xEyzBE4ergE=",
   "success": true,
-  "projectFilePath": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.IntegrationTests\\BarberBook.IntegrationTests.csproj",
+  "projectFilePath": "C:\\dev\\barberbook\\BarberBook.IntegrationTests\\BarberBook.IntegrationTests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\john_\\.nuget\\packages\\coverlet.collector\\6.0.2\\coverlet.collector.6.0.2.nupkg.sha512",
     "C:\\Users\\john_\\.nuget\\packages\\docker.dotnet\\3.125.15\\docker.dotnet.3.125.15.nupkg.sha512",

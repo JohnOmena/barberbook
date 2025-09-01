@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BarberBook.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b659a6bca0b6f8c0b45bd7986417d279f38ba179")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8558db44ec5d1dd35695c5667cf62851e47ea857")]
 [assembly: System.Reflection.AssemblyProductAttribute("BarberBook.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BarberBook.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

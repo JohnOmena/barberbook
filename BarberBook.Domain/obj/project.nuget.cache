@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "4HeM5zLCqSw=",
+  "dgSpecHash": "PAJSrq/oq3E=",
   "success": true,
-  "projectFilePath": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Domain\\BarberBook.Domain.csproj",
+  "projectFilePath": "C:\\dev\\barberbook\\BarberBook.Domain\\BarberBook.Domain.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

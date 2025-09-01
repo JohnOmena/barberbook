@@ -18,3 +18,23 @@ C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberboo
 C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.pdb
 C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.genruntimeconfig.cache
 C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\ref\BarberBook.Infrastructure.dll
+C:\dev\barberbook\BarberBook.Infrastructure\bin\Debug\net9.0\BarberBook.Infrastructure.deps.json
+C:\dev\barberbook\BarberBook.Infrastructure\bin\Debug\net9.0\BarberBook.Infrastructure.runtimeconfig.json
+C:\dev\barberbook\BarberBook.Infrastructure\bin\Debug\net9.0\BarberBook.Infrastructure.dll
+C:\dev\barberbook\BarberBook.Infrastructure\bin\Debug\net9.0\BarberBook.Infrastructure.pdb
+C:\dev\barberbook\BarberBook.Infrastructure\bin\Debug\net9.0\BarberBook.Application.dll
+C:\dev\barberbook\BarberBook.Infrastructure\bin\Debug\net9.0\BarberBook.Domain.dll
+C:\dev\barberbook\BarberBook.Infrastructure\bin\Debug\net9.0\BarberBook.Application.pdb
+C:\dev\barberbook\BarberBook.Infrastructure\bin\Debug\net9.0\BarberBook.Domain.pdb
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.csproj.AssemblyReference.cache
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.AssemblyInfoInputs.cache
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.AssemblyInfo.cs
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.csproj.CoreCompileInputs.cache
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.sourcelink.json
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBo.098D071D.Up2Date
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.dll
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\refint\BarberBook.Infrastructure.dll
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.pdb
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\BarberBook.Infrastructure.genruntimeconfig.cache
+C:\dev\barberbook\BarberBook.Infrastructure\obj\Debug\net9.0\ref\BarberBook.Infrastructure.dll

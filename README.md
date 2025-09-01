@@ -14,3 +14,12 @@ Responsabilidades
 - Web: painel Razor (visão do dia + ações).
 - automation/n8n: fluxos (wa-incoming, slots, book, lembretes).
 - deploy: docker-compose + env.example.
+
+## Swagger (API)
+- URL: `http://localhost:<porta>/swagger`
+- Desenvolvimento local (profile http): `http://localhost:5160/swagger`
+- Via Docker Compose: `http://localhost:8080/swagger`
+
+Como subir rapidamente:
+- Local: `dotnet run --project BarberBook.Api`
+- Docker: `./scripts/enable-swagger.ps1` (habilita Development e abre o navegador)

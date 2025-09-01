@@ -2902,18 +2902,18 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Infrastructure\\BarberBook.Infrastructure.csproj",
+      "projectUniqueName": "C:\\dev\\barberbook\\BarberBook.Infrastructure\\BarberBook.Infrastructure.csproj",
       "projectName": "BarberBook.Infrastructure",
-      "projectPath": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Infrastructure\\BarberBook.Infrastructure.csproj",
+      "projectPath": "C:\\dev\\barberbook\\BarberBook.Infrastructure\\BarberBook.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\john_\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Infrastructure\\obj\\",
+      "outputPath": "C:\\dev\\barberbook\\BarberBook.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\DevExpress 24.1\\Components\\Offline Packages",
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\NuGet.Config",
+        "C:\\dev\\barberbook\\NuGet.Config",
         "C:\\Users\\john_\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
@@ -2929,11 +2929,11 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Application\\BarberBook.Application.csproj": {
-              "projectPath": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Application\\BarberBook.Application.csproj"
+            "C:\\dev\\barberbook\\BarberBook.Application\\BarberBook.Application.csproj": {
+              "projectPath": "C:\\dev\\barberbook\\BarberBook.Application\\BarberBook.Application.csproj"
             },
-            "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Domain\\BarberBook.Domain.csproj": {
-              "projectPath": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Domain\\BarberBook.Domain.csproj"
+            "C:\\dev\\barberbook\\BarberBook.Domain\\BarberBook.Domain.csproj": {
+              "projectPath": "C:\\dev\\barberbook\\BarberBook.Domain\\BarberBook.Domain.csproj"
             }
           }
         }

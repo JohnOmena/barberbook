@@ -14,3 +14,19 @@ C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberboo
 C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\refint\BarberBook.Application.dll
 C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.pdb
 C:\Users\john_\OneDrive\Área de Trabalho\Projeto N8N\Projeto Barberia\barberbook\BarberBook.Application\obj\Debug\net9.0\ref\BarberBook.Application.dll
+C:\dev\barberbook\BarberBook.Application\bin\Debug\net9.0\BarberBook.Application.deps.json
+C:\dev\barberbook\BarberBook.Application\bin\Debug\net9.0\BarberBook.Application.dll
+C:\dev\barberbook\BarberBook.Application\bin\Debug\net9.0\BarberBook.Application.pdb
+C:\dev\barberbook\BarberBook.Application\bin\Debug\net9.0\BarberBook.Domain.dll
+C:\dev\barberbook\BarberBook.Application\bin\Debug\net9.0\BarberBook.Domain.pdb
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.csproj.AssemblyReference.cache
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.AssemblyInfoInputs.cache
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.AssemblyInfo.cs
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.csproj.CoreCompileInputs.cache
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.sourcelink.json
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBo.99EDA307.Up2Date
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.dll
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\refint\BarberBook.Application.dll
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\BarberBook.Application.pdb
+C:\dev\barberbook\BarberBook.Application\obj\Debug\net9.0\ref\BarberBook.Application.dll

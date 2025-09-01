@@ -15,18 +15,18 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Web\\BarberBook.Web.csproj",
+      "projectUniqueName": "C:\\dev\\barberbook\\BarberBook.Web\\BarberBook.Web.csproj",
       "projectName": "BarberBook.Web",
-      "projectPath": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Web\\BarberBook.Web.csproj",
+      "projectPath": "C:\\dev\\barberbook\\BarberBook.Web\\BarberBook.Web.csproj",
       "packagesPath": "C:\\Users\\john_\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\BarberBook.Web\\obj\\",
+      "outputPath": "C:\\dev\\barberbook\\BarberBook.Web\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\DevExpress 24.1\\Components\\Offline Packages",
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\john_\\OneDrive\\Área de Trabalho\\Projeto N8N\\Projeto Barberia\\barberbook\\NuGet.Config",
+        "C:\\dev\\barberbook\\NuGet.Config",
         "C:\\Users\\john_\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",

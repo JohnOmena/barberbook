@@ -54,9 +54,21 @@ public sealed class CreateBookingUseCase
         var end = start.AddMinutes(service.DurationMin + service.BufferMin);
 
         var exists = _appointments.Query()
-            .Any(a => a.ProfessionalId == prof.Id && a.StartsAt == start);
+            .Any(a => a.ProfessionalId == prof.Id && a.StartsAt == start && a.Status != AppointmentStatus.Cancelled);
         if (exists)
             throw new DomainConflictException("Já existe um agendamento nesse horário.");
+
+        // Checagem de conflito por sobreposição (ignora Cancelled e NoShow)
+        {
+            var conflict = _appointments.Query()
+                .Any(a => a.ProfessionalId == prof.Id
+                       && a.Status != AppointmentStatus.Cancelled
+                       && a.Status != AppointmentStatus.NoShow
+                       && a.StartsAt < end
+                       && a.EndsAt > start);
+            if (conflict)
+                throw new DomainConflictException("Já existe um agendamento que conflita com esse horário.");
+        }
 
         var appt = new Appointment(
             id: Guid.NewGuid(),

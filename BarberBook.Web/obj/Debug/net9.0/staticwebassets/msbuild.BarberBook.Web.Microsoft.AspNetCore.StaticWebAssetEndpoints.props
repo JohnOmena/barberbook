@@ -4,13 +4,25 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\BarberBook.Web.toh6dcmtms.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-8\u002BM/zuRLofSCkKzlp8WklJUcQ4a4p5kgFods3cVEZ1E="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1132"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00228\u002BM/zuRLofSCkKzlp8WklJUcQ4a4p5kgFods3cVEZ1E=\u0022"},{"Name":"Last-Modified","Value":"Fri, 29 Aug 2025 22:04:49 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1132"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00228\u002BM/zuRLofSCkKzlp8WklJUcQ4a4p5kgFods3cVEZ1E=\u0022"},{"Name":"Last-Modified","Value":"Sun, 31 Aug 2025 16:38:52 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/BarberBook.Web/BarberBook.Web.toh6dcmtms.bundle.scp.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\BarberBook.Web.toh6dcmtms.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"toh6dcmtms"},{"Name":"integrity","Value":"sha256-8\u002BM/zuRLofSCkKzlp8WklJUcQ4a4p5kgFods3cVEZ1E="},{"Name":"label","Value":"_content/BarberBook.Web/BarberBook.Web.bundle.scp.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1132"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00228\u002BM/zuRLofSCkKzlp8WklJUcQ4a4p5kgFods3cVEZ1E=\u0022"},{"Name":"Last-Modified","Value":"Fri, 29 Aug 2025 22:04:49 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1132"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00228\u002BM/zuRLofSCkKzlp8WklJUcQ4a4p5kgFods3cVEZ1E=\u0022"},{"Name":"Last-Modified","Value":"Sun, 31 Aug 2025 16:38:52 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/BarberBook.Web/css/admin.amw3yhqzss.css">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\admin.css'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"amw3yhqzss"},{"Name":"integrity","Value":"sha256-4m1FebMwj\u002BRL\u002BsDTXGGd74AXgVB8nKHQlAJdsw0NEt8="},{"Name":"label","Value":"_content/BarberBook.Web/css/admin.css"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"4533"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00224m1FebMwj\u002BRL\u002BsDTXGGd74AXgVB8nKHQlAJdsw0NEt8=\u0022"},{"Name":"Last-Modified","Value":"Sun, 31 Aug 2025 18:26:46 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/BarberBook.Web/css/admin.css">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\admin.css'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-4m1FebMwj\u002BRL\u002BsDTXGGd74AXgVB8nKHQlAJdsw0NEt8="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"4533"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00224m1FebMwj\u002BRL\u002BsDTXGGd74AXgVB8nKHQlAJdsw0NEt8=\u0022"},{"Name":"Last-Modified","Value":"Sun, 31 Aug 2025 18:26:46 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/BarberBook.Web/css/site.b9sayid5wm.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))</AssetFile>

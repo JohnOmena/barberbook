@@ -72,10 +72,17 @@ if ($sw) {
   Write-Host "Abra: http://localhost:8080/swagger"
   # lista os POST
   $posts = @()
-  $sw.paths.PSObject.Properties.Name | ForEach-Object {
-    $p = $_; $node = $sw.paths.$p
-    if ($null -ne $node.post) {
-      $posts += [pscustomobject]@{ Path=$p; Summary=$node.post.summary; OpId=$node.post.operationId }
+  # Evitar StrictMode falhando ao acessar propriedades inexistentes e nomes com '/'
+  $sw.paths.PSObject.Properties | ForEach-Object {
+    $p = $_.Name
+    $node = $_.Value
+    $post = $node.PSObject.Properties['post']
+    if ($null -ne $post -and $null -ne $post.Value) {
+      $sumProp  = $post.Value.PSObject.Properties['summary']
+      $opIdProp = $post.Value.PSObject.Properties['operationId']
+      $sum  = if ($sumProp)  { $sumProp.Value }  else { '' }
+      $opId = if ($opIdProp) { $opIdProp.Value } else { '' }
+      $posts += [pscustomobject]@{ Path=$p; Summary=$sum; OpId=$opId }
     }
   }
   Write-Host "`n== ENDPOINTS POST =="

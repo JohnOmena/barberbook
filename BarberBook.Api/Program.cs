@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using BarberBook.Api.Extensions;
 using BarberBook.Api.Endpoints;
-using BarberBook.Api.Filters;
 using BarberBook.Api.Middleware;
 using BarberBook.Api.Seed;
 using BarberBook.Application.Abstractions;
@@ -24,20 +23,34 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Swagger/OpenAPI
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-// CORS: allow http://localhost:* 
+// CORS: permitir localhost e IPs privados (para acesso via celular na LAN) em Development
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Localhost", p => p
         .SetIsOriginAllowed(origin =>
         {
-            try { var u = new Uri(origin); return u.Scheme == "http" && u.Host == "localhost"; }
+            try
+            {
+                var u = new Uri(origin);
+                if (u.Scheme != "http" && u.Scheme != "https") return false;
+                if (string.Equals(u.Host, "localhost", StringComparison.OrdinalIgnoreCase)) return true;
+                if (string.Equals(u.Host, "host.docker.internal", StringComparison.OrdinalIgnoreCase)) return true;
+                // permitir IPs privados típicos (10/8, 172.16-31/12, 192.168/16)
+                if (System.Net.IPAddress.TryParse(u.Host, out var ip) && ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                {
+                    var b = ip.GetAddressBytes();
+                    var isPrivate = b[0] == 10 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168);
+                    if (isPrivate) return true;
+                }
+                // permitir tudo em Development
+                return builder.Environment.IsDevelopment();
+            }
             catch { return false; }
         })
         .AllowAnyHeader()
@@ -55,9 +68,15 @@ builder.Services.AddScoped<BarberBook.Application.UseCases.CreateBookingUseCase>
 builder.Services.AddScoped<BarberBook.Application.UseCases.CancelBookingUseCase>();
 builder.Services.AddScoped<BarberBook.Application.UseCases.GetDayStatusUseCase>();
 builder.Services.AddScoped<BarberBook.Application.UseCases.UpdateAppointmentStatusUseCase>();
+builder.Services.AddScoped<BarberBook.Application.UseCases.DeleteAppointmentUseCase>();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "BarberBook API", Version = "v1" }));
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "BarberBook API", Version = "v1" });
+    c.DocumentFilter<BarberBook.Api.Swagger.OrderTagsDocumentFilter>();
+    c.OrderActionsBy(apiDesc => apiDesc.RelativePath);
+});
 var app = builder.Build();
 
 // Exception handling
@@ -76,11 +95,10 @@ if (seedEnabled)
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/openapi/v1.json", "BarberBook API v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "BarberBook API v1");
     });
 }
 
@@ -100,6 +118,7 @@ app.MapServicesEndpoints();
 app.MapSlotsEndpoints();
 app.MapBookingEndpoints();
 app.MapStatusEndpoints();
+app.MapTenantsEndpoints();
 
 app.Run();
 

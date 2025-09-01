@@ -27,6 +27,23 @@ public sealed class SlotCalculator : ISlotCalculator
         var minStart = Max(openHours.Start, utcNow.AddMinutes(leadMinutes));
         var busyList = (busy ?? Enumerable.Empty<TimeRange>()).ToList();
 
+        // Novo algoritmo: gera candidatos ao longo do período aberto e filtra por busy.
+        var slotLength = TimeSpan.FromMinutes(durationMin + bufferMin);
+        var cursor = RoundUpToStep(minStart, stepMin);
+        while (true)
+        {
+            if (cursor + slotLength > openHours.End)
+                yield break;
+
+            if (!StartInsideBusy(cursor, busyList))
+            {
+                yield return new TimeRange(cursor, cursor.AddMinutes(durationMin));
+            }
+
+            cursor = cursor.AddMinutes(stepMin);
+        }
+
+#if false
         foreach (var free in openHours.Subtract(busyList))
         {
             var segmentStart = Max(free.Start, minStart);
@@ -45,6 +62,7 @@ public sealed class SlotCalculator : ISlotCalculator
                 cursor = next;
             }
         }
+#endif
     }
 
     private static DateTime Max(DateTime a, DateTime b) => a >= b ? a : b;
@@ -61,5 +79,15 @@ public sealed class SlotCalculator : ISlotCalculator
         }
         return DateTime.SpecifyKind(dt, kind);
     }
-}
 
+    private static bool StartInsideBusy(DateTime start, List<TimeRange> busy)
+    {
+        if (busy.Count == 0) return false;
+        foreach (var b in busy)
+        {
+            if (start >= b.Start && start < b.End)
+                return true;
+        }
+        return false;
+    }
+}

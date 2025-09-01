@@ -7,8 +7,10 @@ namespace BarberBook.Application.DTOs;
 public readonly record struct DayStatusItemDto(
     Guid Id,
     DateTime StartsAt,
+    DateTime EndsAt,
     string ServiceName,
     string ClientName,
+    string ClientContact,
     AppointmentStatus Status,
     decimal Price);
 

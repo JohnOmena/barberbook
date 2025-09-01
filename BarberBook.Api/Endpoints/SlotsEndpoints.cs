@@ -4,6 +4,8 @@ using BarberBook.Application.UseCases;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 
 namespace BarberBook.Api.Endpoints;
 
@@ -22,12 +24,26 @@ public static class SlotsEndpoints
             return TypedResults.Ok(dto);
         })
         .WithName("GetSlots")
+        .WithTags("Slots")
         .WithOpenApi(op =>
         {
             op.Summary = "Consulta de slots";
             op.Description = "Retorna os horários disponíveis para o serviço na data informada.";
             op.Parameters[0].Description = "Id do serviço";
             op.Parameters[1].Description = "Data no formato YYYY-MM-DD";
+            return op;
+        })
+        .WithOpenApi(op =>
+        {
+            var arr = new OpenApiArray
+            {
+                new OpenApiObject { ["startUtc"] = new OpenApiString("2025-08-31T12:00:00Z"), ["endUtc"] = new OpenApiString("2025-08-31T12:30:00Z") },
+                new OpenApiObject { ["startUtc"] = new OpenApiString("2025-08-31T12:35:00Z"), ["endUtc"] = new OpenApiString("2025-08-31T13:05:00Z") }
+            };
+            if (op.Responses.ContainsKey("200") && op.Responses["200"].Content.ContainsKey("application/json"))
+            {
+                op.Responses["200"].Content["application/json"].Example = arr;
+            }
             return op;
         });
 

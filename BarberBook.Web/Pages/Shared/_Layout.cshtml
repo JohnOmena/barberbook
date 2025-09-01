@@ -4,10 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - BarberBook.Web</title>
+    <meta name="color-scheme" content="light" />
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/BarberBook.Web.styles.css" asp-append-version="true" />
+    @RenderSection("Head", required: false)
 </head>
 <body>
     <header>
@@ -18,15 +20,13 @@
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
-                    </ul>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
+                    @if (User?.Identity?.IsAuthenticated == true)
+                    {
+                        <form class="d-inline" method="post" asp-page="/Admin/Index" asp-page-handler="Logout">
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">Sair</button>
+                        </form>
+                    }
                 </div>
             </div>
         </nav>
