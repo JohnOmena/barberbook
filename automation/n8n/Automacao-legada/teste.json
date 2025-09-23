@@ -1,0 +1,9 @@
+{
+  "name": "ping-pong",
+  "nodes": [
+    { "parameters": { "path": "ping", "httpMethod": "POST", "responseMode": "responseNode" }, "type": "n8n-nodes-base.webhook", "typeVersion": 1, "name": "Webhook", "position": [260,300] },
+    { "parameters": { "responseCode": 200, "responseBody": "pong", "responseFormat": "string" }, "type": "n8n-nodes-base.respondToWebhook", "typeVersion": 1, "name": "Respond", "position": [520,300] }
+  ],
+  "connections": { "Webhook": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] } },
+  "active": true
+}

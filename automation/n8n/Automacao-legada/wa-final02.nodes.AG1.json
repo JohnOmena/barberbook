@@ -1,0 +1,4 @@
+{"nodes":[
+{"name":"API_Services_AG","type":"n8n-nodes-base.httpRequest","typeVersion":1,"parameters":{"method":"GET","url":"http://barberbook-api:8080/api/services","jsonParameters":true},"position":[0,0]},
+{"name":"Gemini_ServiceMatch_AG","type":"n8n-nodes-base.httpRequest","typeVersion":1,"parameters":{"method":"POST","url":"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent","jsonParameters":true,"options":{"responseFormat":"json","ignoreResponseCode":true},"headerParametersJson":"{\"x-goog-api-key\":\"AIzaSyAQdhMQ-aMy0H7rW3QuQ29nhImz5GhlYLY\",\"Content-Type\":\"application/json\"}","bodyParametersJson":"{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Saida apenas JSON {\\\"matchName\\\": string|null}. Texto: {{$json.text}}\"}]}],\"generationConfig\":{\"responseMimeType\":\"application/json\"}}"},"position":[0,120]}
+]}

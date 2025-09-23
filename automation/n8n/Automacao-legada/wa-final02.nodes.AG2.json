@@ -1,0 +1,5 @@
+{"nodes":[
+{"name":"Merge_Services_AI_AG","type":"n8n-nodes-base.merge","typeVersion":1,"parameters":{"mode":"mergeByPosition"},"position":[160,60]},
+{"name":"MapServiceId_AG","type":"n8n-nodes-base.function","typeVersion":1,"parameters":{"functionCode":"const names=($json.services||$json||[]).map?.(s=>({id:s.id,name:s.name}))||[];const ai=$json||{};const raw=ai.matchName||ai.name||'';const match=String(raw).toLowerCase();let found=null;for(const s of names){if((s.name||'').toLowerCase()===match){found=s;break;}}return [{json:{...$json,services:names,found:!!found,serviceId:found?.id||'',serviceName:found?.name||''}}];"},"position":[320,60]},
+{"name":"IfServiceMatched_AG","type":"n8n-nodes-base.if","typeVersion":1,"parameters":{"conditions":{"boolean":[{"value1":"={{$json.found}}"}]}},"position":[480,60]}
+]}

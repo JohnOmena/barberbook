@@ -1,0 +1,25 @@
+[
+  {
+    "name": "wa-echo-test",
+    "active": true,
+    "nodes": [
+      {
+        "parameters": {"path": "wa-echo", "httpMethod": "POST", "responseMode": "responseNode"},
+        "id": "Webhook",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [260,260]
+      },
+      {
+        "parameters": {"responseBody": "ECHO OK", "responseCode": 200, "responseFormat": "string"},
+        "id": "Respond",
+        "name": "Respond",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [560,260]
+      }
+    ],
+    "connections": {"Webhook": {"main": [[{"node": "Respond", "type": "main", "index": 0}]]}}
+  }
+]

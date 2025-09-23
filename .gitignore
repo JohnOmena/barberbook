@@ -1,0 +1,86 @@
+# IDE settings
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sln.iml
+*.DotSettings.user
+
+# Build outputs
+[Bb]in/
+[Oo]bj/
+TestResults/
+artifacts/
+out/
+
+# Coverage
+*.coverage
+*.coveragexml
+coverage/
+coverage-*
+coverage*.json
+coverage*.xml
+lcov.info
+
+# Logs and diagnostics
+*.log
+*.tlog
+logs/
+
+# Packages and caches
+packages/
+.nuget/
+*.nupkg
+*.snupkg
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.orig
+*.bak
+*.bak.*
+*.bak-*
+*.old
+~*
+
+# Local working dirs
+backups/
+docker-compose-override/
+tmp/
+tmp_*.txt
+tmp_*.diff
+tmp_*.json
+
+# Runtime data
+*.db
+*.db-shm
+*.db-wal
+*.sqlite*
+*.mdf
+*.ldf
+*.ndf
+
+# Environment / secrets
+.env
+.env.*
+deploy/.env
+deploy/.env.*
+
+# Docker generated files
+docker-compose.override.yml.bak*
+docker-compose.merged.yml.bak*
+docker-compose.override.yml.local
+
+# OS artifacts
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Allow example env templates
+!.env.example
+!deploy/env.example

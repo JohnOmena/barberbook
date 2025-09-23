@@ -1,0 +1,23 @@
+{"connections":{
+"fromMe?":{"main":[[],[{"node":"LoadState","type":"main","index":0},{"node":"Carry_Base","type":"main","index":0}]]},
+"LoadState":{"main":[[{"node":"Merge_Load","type":"main","index":1}]]},
+"Carry_Base":{"main":[[{"node":"Merge_Load","type":"main","index":0}]]},
+"Merge_Load":{"main":[[{"node":"Parse_State","type":"main","index":0}]]},
+"Parse_State":{"main":[[{"node":"HasState","type":"main","index":0}]]},
+"HasState":{"main":[[{"node":"PickOption","type":"main","index":0}],[{"node":"Gemini_Intent","type":"main","index":0},{"node":"Carry_IA","type":"main","index":0}]]},
+"PickOption":{"main":[[{"node":"IfCancel_AG","type":"main","index":0}]]},
+"IfCancel_AG":{"main":[[{"node":"WAHA_Cancel_AG","type":"main","index":0}],[{"node":"Merge_Tenant","type":"main","index":0},{"node":"API_Tenant","type":"main","index":0}]]},
+"WAHA_Cancel_AG":{"main":[[{"node":"ClearState","type":"main","index":0}]]},
+"API_Tenant":{"main":[[{"node":"Merge_Tenant","type":"main","index":1}]]},
+"Merge_Tenant":{"main":[[{"node":"API_Book","type":"main","index":0}]]},
+"API_Book":{"main":[[{"node":"Conflict409","type":"main","index":0}]]},
+"Conflict409":{"main":[[{"node":"WAHA_Conflict","type":"main","index":0}],[{"node":"Status2xx_AG","type":"main","index":0}]]},
+"Status2xx_AG":{"main":[[{"node":"WAHA_Confirmed","type":"main","index":0}],[{"node":"WAHA_Invalid_AG","type":"main","index":0}]]},
+"WAHA_Conflict":{"main":[[{"node":"Respond OK","type":"main","index":0}]]},
+"WAHA_Confirmed":{"main":[[{"node":"ClearState","type":"main","index":0}]]},
+"ClearState":{"main":[[{"node":"Respond OK","type":"main","index":0}]]},
+"Gemini_Intent":{"main":[[{"node":"Parse_AI","type":"main","index":0}]]},
+"Parse_AI":{"main":[[{"node":"Merge_IA","type":"main","index":1}]]},
+"Carry_IA":{"main":[[{"node":"Merge_IA","type":"main","index":0}]]},
+"Merge_IA":{"main":[[{"node":"Intent","type":"main","index":0}]]}
+}}

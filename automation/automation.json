@@ -1,0 +1,740 @@
+{
+  "name": "Whatsapp v1.1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wa-incoming",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2704,
+        -32
+      ],
+      "id": "b34528fb-a0a9-451d-907f-9778f2c20cbd",
+      "name": "Webhook",
+      "webhookId": "12c1238d-e643-4a30-8325-50a08c08d452"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "263475a2-ecda-4f08-b3ae-d1b6b103aa82",
+              "name": "session",
+              "value": "={{ $json.body.session }}",
+              "type": "string"
+            },
+            {
+              "id": "2badd492-5014-4a4c-96dd-805e1caef1e2",
+              "name": "chatId",
+              "value": "={{ $json.body.payload.from }}",
+              "type": "string"
+            },
+            {
+              "id": "50c1e2cf-5ad8-4963-a7c5-f89dc37ac94c",
+              "name": "pushName",
+              "value": "={{ $json.body.payload._data.Info.PushName }}",
+              "type": "string"
+            },
+            {
+              "id": "4e6a3de6-bed1-4cc3-83c7-c6209fa112de",
+              "name": "payload_id",
+              "value": "={{ $json.body.payload.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f112b63e-8f46-4a2f-a9bd-e28a37edec98",
+              "name": "event",
+              "value": "={{ $json.body.event }}",
+              "type": "string"
+            },
+            {
+              "id": "aaeabb47-904a-4cd9-a6d2-3f96af173d20",
+              "name": "message",
+              "value": "={{ $json.body.payload.body }}",
+              "type": "string"
+            },
+            {
+              "id": "7481ded0-b65c-4a98-a73f-c0e301cfd42f",
+              "name": "fromMe",
+              "value": "={{ $json.body.payload.fromMe }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2560,
+        -32
+      ],
+      "id": "4506b6aa-7ba1-4501-831e-03686a7a3ef6",
+      "name": "Dados"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -2192,
+        192
+      ],
+      "id": "5e95c554-bcd4-42b1-8c77-08575d7c043a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bCWvr5GlvRA2YNn9",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.chatId }}",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        -1456,
+        -48
+      ],
+      "id": "9996e7c7-36f6-4b4d-8244-5a2aeeb5095a",
+      "name": "Send a text message",
+      "credentials": {
+        "wahaApi": {
+          "id": "cred-waha-account-2",
+          "name": "WAHA account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Seen",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.chatId }}",
+        "messageId": "={{ $('Dados').item.json.payload_id }}",
+        "participant": "",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        -1776,
+        -48
+      ],
+      "id": "26f561e7-010e-466a-a786-eae1157c7fc0",
+      "name": "Send Seen1",
+      "credentials": {
+        "wahaApi": {
+          "id": "cred-waha-account-2",
+          "name": "WAHA account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Dados').item.json.message }}",
+        "options": {
+          "systemMessage": "Você é o agente de agendamentos do BarberBook (barbearia). Seu objetivo é levar o cliente a um agendamento confirmado ou a um cancelamento, pedindo apenas a informação que falta em cada passo.\n\nO idioma é português do Brasil. O tom deve ser profissional, cordial e direto. As mensagens devem ser curtas (1–3 linhas) e conter somente uma pergunta por vez. Não use Markdown, emojis ou listas longas. Apresente-se como “BarberBook”. Nunca diga que é um modelo de linguagem, IA genérica ou que não pode agendar. Se perguntarem “quem é você?”, responda: “Sou o assistente de agendamentos da BarberBook.”\n\nPara agendar, os dados mínimos são: serviço, data e horário. Utilize apenas os serviços existentes no sistema; se não reconhecer o pedido do cliente, peça que ele escolha entre os serviços disponíveis. Aceite datas e horários em linguagem natural (por exemplo, “amanhã”, “terça”, “dia 20”) e horários em formato 24h (como “14:00”), considerando o fuso America/Sao_Paulo. Não prometa horário. Aguarde a lista numerada enviada pelo sistema e instrua: “Responda com o número do horário desejado ou 0 para cancelar.” Se a data for inválida ou indefinida, peça novamente a data de forma objetiva. Quando o sistema enviar a lista de horários, não replique a lista; apenas peça o número. Após o cliente enviar o número, aguarde a confirmação do sistema e não confirme por conta própria. Se vier a confirmação com ID, responda quando necessário: “Agendado: {serviço} às {hora} do dia {data}. ID: {id}. Para cancelar, responda: cancelar {id}.”\n\nPara cancelamento: quando o cliente escrever “cancelar 123”, encaminhe para cancelamento. Se ele escrever apenas “cancelar”, peça o ID do agendamento.\n\nEm caso de dúvidas ou erros, peça apenas o que falta, como “Qual serviço?”, “Para qual data?” ou “Qual horário?”. Se o horário escolhido esgotar, informe o cliente e ofereça ver outras opções. Forneça preço e duração apenas se o cliente pedir e se a informação estiver disponível. Não solicite dados sensíveis, como CPF ou cartão. Se a conversa ficar confusa, faça um resumo: “Tenho: serviço X e data Y. Falta o horário.”\n\nComandos aceitos do cliente: “agendar <serviço> <data> <hora>”, “cancelar <id>” e “ver horários <data> <serviço>”."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2192,
+        -48
+      ],
+      "id": "ee3e7468-4571-4abc-96b3-85c58e5f1cbb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1936,
+        -48
+      ],
+      "id": "ec83c23c-1e77-43b4-8054-c357248ab83b",
+      "name": "Wait",
+      "webhookId": "afffeaa3-7208-49c2-9093-c1ea2c11a2a2"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1616,
+        -48
+      ],
+      "id": "c8d5fa6e-63b0-4126-9f4c-9e618b292f9b",
+      "name": "Wait1",
+      "webhookId": "afffeaa3-7208-49c2-9093-c1ea2c11a2a2"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').item.json.chatId }}",
+        "sessionTTL": 3600,
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        -2096,
+        192
+      ],
+      "id": "0ad18f6f-3f3e-497e-b7a3-1804e5ae74be",
+      "name": "Redis Chat Memory1",
+      "credentials": {
+        "redis": {
+          "id": "cred-redis-account",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0c6d8332-df0f-4c8a-b310-1ca14c2aaafb",
+              "leftValue": "={{ $json.chatId }}",
+              "rightValue": "558299198887",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2416,
+        -32
+      ],
+      "id": "248096fc-b9bc-480c-9674-9020ec7c46c7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('Dados').item.json.message && $('Dados').item.json.message.toString().toLowerCase() }}",
+              "operation": "contains",
+              "value2": "servi"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2416,
+        -224
+      ],
+      "id": "f88a0e27-8a14-4b0f-9e0a-6c0c9a7d4b12",
+      "name": "If Serviços?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "apiBase-1",
+              "name": "apiBase",
+              "value": "http://barberbook-api:8080",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2240,
+        -224
+      ],
+      "id": "6b1d6d5f-1e83-4e9f-8df7-4b18a8e9480a",
+      "name": "Set API Base"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.apiBase || 'http://barberbook-api:8080' }}/api/services",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 5,
+      "position": [
+        -2080,
+        -224
+      ],
+      "id": "1d8be1a3-37aa-4a1d-9e9e-5b37a27b589b",
+      "name": "Get Services"
+    },
+    {
+      "parameters": {
+        "functionCode": "const list = Array.isArray(items[0].json) ? items[0].json : (items[0].json.data ?? items[0].json);\nconst names = (list || []).map((s, i) => `${i+1}) ${s.name}`).join('\\n');\nreturn [{ json: { text: `Serviços disponíveis:\n${names}\n` } }];"
+      },
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        -1904,
+        -224
+      ],
+      "id": "98e4ac7e-2dba-4f89-8c3f-0ce76b6c0b58",
+      "name": "Format Services"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.chatId }}",
+        "text": "={{ $('Format Services').item.json.text }}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        -1728,
+        -224
+      ],
+      "id": "0f2bfc26-b3f9-46f3-8a6a-9f763f34f48a",
+      "name": "Send Services List",
+      "credentials": {
+        "wahaApi": {
+          "id": "cred-waha-account-2",
+          "name": "WAHA account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json",
+            "user-agent": "WAHA/2025.9.2",
+            "x-webhook-request-id": "01K556DMKACRB4J665545XGRQ7",
+            "x-webhook-timestamp": "1757889876586",
+            "content-length": "4533",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "n8n:5678",
+            "connection": "keep-alive"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "id": "evt_01k556dmkamc373d4vvw3chjz5",
+            "timestamp": 1757889876586,
+            "event": "message.any",
+            "session": "default",
+            "me": {
+              "id": "558299198887@c.us",
+              "pushName": "John Omena"
+            },
+            "payload": {
+              "id": "true_558299198887@c.us_3EB0BF0609014F357BF2B4_out",
+              "timestamp": 1757889876,
+              "from": "558299198887@c.us",
+              "fromMe": true,
+              "participant": "out@c.us",
+              "source": "api",
+              "to": "558299198887@c.us",
+              "body": "Sim, preciso agendar um corte de cabelo.",
+              "hasMedia": false,
+              "media": {
+                "_data": {
+                  "id": {
+                    "fromMe": true,
+                    "remote": "558299198887@c.us",
+                    "id": "3EB0BF0609014F357BF2B4",
+                    "self": "out",
+                    "_serialized": "true_558299198887@c.us_3EB0BF0609014F357BF2B4_out"
+                  },
+                  "viewed": false,
+                  "body": "Sim, preciso agendar um corte de cabelo.",
+                  "type": "chat",
+                  "t": 1757889876,
+                  "from": "558299198887@c.us",
+                  "to": "558299198887@c.us",
+                  "ack": 0,
+                  "isNewMsg": true,
+                  "star": false,
+                  "kicNotified": false,
+                  "isFromTemplate": false,
+                  "pollInvalidated": false,
+                  "isSentCagPollCreation": false,
+                  "latestEditMsgKey": null,
+                  "latestEditSenderTimestampMs": null,
+                  "mentionedJidList": [],
+                  "groupMentions": [],
+                  "isEventCanceled": false,
+                  "eventInvalidated": false,
+                  "isVcardOverMmsDocument": false,
+                  "isForwarded": false,
+                  "isQuestion": false,
+                  "questionReplyQuotedMessage": null,
+                  "questionResponsesCount": 0,
+                  "readQuestionResponsesCount": 0,
+                  "hasReaction": false,
+                  "productHeaderImageRejected": false,
+                  "lastPlaybackProgress": 0,
+                  "isDynamicReplyButtonsMsg": false,
+                  "isCarouselCard": false,
+                  "parentMsgId": null,
+                  "callSilenceReason": null,
+                  "isVideoCall": false,
+                  "callDuration": null,
+                  "callCreator": null,
+                  "callParticipants": null,
+                  "isCallLink": null,
+                  "callLinkToken": null,
+                  "isMdHistoryMsg": false,
+                  "stickerSentTs": 0,
+                  "isAvatar": false,
+                  "lastUpdateFromServerTs": 0,
+                  "invokedBotWid": null,
+                  "bizBotType": null,
+                  "botResponseTargetId": null,
+                  "botPluginType": null,
+                  "botPluginReferenceIndex": null,
+                  "botPluginSearchProvider": null,
+                  "botPluginSearchUrl": null,
+                  "botPluginSearchQuery": null,
+                  "botPluginMaybeParent": false,
+                  "botReelPluginThumbnailCdnUrl": null,
+                  "botMessageDisclaimerText": null,
+                  "botMsgBodyType": null,
+                  "requiresDirectConnection": null,
+                  "bizContentPlaceholderType": null,
+                  "hostedBizEncStateMismatch": false,
+                  "senderOrRecipientAccountTypeHosted": false,
+                  "placeholderCreatedWhenAccountIsHosted": false,
+                  "galaxyFlowDisabled": false,
+                  "links": []
+                },
+                "id": {
+                  "fromMe": true,
+                  "remote": "558299198887@c.us",
+                  "id": "3EB0BF0609014F357BF2B4",
+                  "self": "out",
+                  "_serialized": "true_558299198887@c.us_3EB0BF0609014F357BF2B4_out"
+                },
+                "ack": 0,
+                "hasMedia": false,
+                "body": "Sim, preciso agendar um corte de cabelo.",
+                "type": "chat",
+                "timestamp": 1757889876,
+                "from": "558299198887@c.us",
+                "to": "558299198887@c.us",
+                "deviceType": "android",
+                "isForwarded": false,
+                "forwardingScore": 0,
+                "isStatus": false,
+                "isStarred": false,
+                "fromMe": true,
+                "hasQuotedMsg": false,
+                "hasReaction": false,
+                "vCards": [],
+                "mentionedIds": [],
+                "groupMentions": [],
+                "isGif": false,
+                "links": []
+              },
+              "ack": 0,
+              "ackName": "PENDING",
+              "vCards": [],
+              "_data": {
+                "id": {
+                  "fromMe": true,
+                  "remote": "558299198887@c.us",
+                  "id": "3EB0BF0609014F357BF2B4",
+                  "self": "out",
+                  "_serialized": "true_558299198887@c.us_3EB0BF0609014F357BF2B4_out"
+                },
+                "viewed": false,
+                "body": "Sim, preciso agendar um corte de cabelo.",
+                "type": "chat",
+                "t": 1757889876,
+                "from": "558299198887@c.us",
+                "to": "558299198887@c.us",
+                "ack": 0,
+                "isNewMsg": true,
+                "star": false,
+                "kicNotified": false,
+                "isFromTemplate": false,
+                "pollInvalidated": false,
+                "isSentCagPollCreation": false,
+                "latestEditMsgKey": null,
+                "latestEditSenderTimestampMs": null,
+                "mentionedJidList": [],
+                "groupMentions": [],
+                "isEventCanceled": false,
+                "eventInvalidated": false,
+                "isVcardOverMmsDocument": false,
+                "isForwarded": false,
+                "isQuestion": false,
+                "questionReplyQuotedMessage": null,
+                "questionResponsesCount": 0,
+                "readQuestionResponsesCount": 0,
+                "hasReaction": false,
+                "productHeaderImageRejected": false,
+                "lastPlaybackProgress": 0,
+                "isDynamicReplyButtonsMsg": false,
+                "isCarouselCard": false,
+                "parentMsgId": null,
+                "callSilenceReason": null,
+                "isVideoCall": false,
+                "callDuration": null,
+                "callCreator": null,
+                "callParticipants": null,
+                "isCallLink": null,
+                "callLinkToken": null,
+                "isMdHistoryMsg": false,
+                "stickerSentTs": 0,
+                "isAvatar": false,
+                "lastUpdateFromServerTs": 0,
+                "invokedBotWid": null,
+                "bizBotType": null,
+                "botResponseTargetId": null,
+                "botPluginType": null,
+                "botPluginReferenceIndex": null,
+                "botPluginSearchProvider": null,
+                "botPluginSearchUrl": null,
+                "botPluginSearchQuery": null,
+                "botPluginMaybeParent": false,
+                "botReelPluginThumbnailCdnUrl": null,
+                "botMessageDisclaimerText": null,
+                "botMsgBodyType": null,
+                "requiresDirectConnection": null,
+                "bizContentPlaceholderType": null,
+                "hostedBizEncStateMismatch": false,
+                "senderOrRecipientAccountTypeHosted": false,
+                "placeholderCreatedWhenAccountIsHosted": false,
+                "galaxyFlowDisabled": false,
+                "links": []
+              }
+            },
+            "engine": "WEBJS",
+            "environment": {
+              "version": "2025.9.2",
+              "engine": "WEBJS",
+              "tier": "CORE",
+              "browser": "/usr/bin/chromium"
+            }
+          },
+          "webhookUrl": "http://host.docker.internal:5678/webhook/wa-incoming",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados": {
+      "main": [
+        [
+          {
+            "node": "If Serviços?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Seen1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send Seen1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Serviços?": {
+      "main": [
+        [
+          {
+            "node": "Set API Base",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set API Base": {
+      "main": [
+        [
+          {
+            "node": "Get Services",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Services": {
+      "main": [
+        [
+          {
+            "node": "Format Services",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Services": {
+      "main": [
+        [
+          {
+            "node": "Send Services List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "913f8c11-0d67-43ac-8b13-519ec6468b72-v1.1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9c9c472f088125ec43dd9d78cbaf3aff4b4be15684694fd9fb20aff74262aacf"
+  },
+  "id": "EpLVBNYyy494x8jp",
+  "tags": [
+    {
+      "createdAt": "2025-09-14T18:52:41.541Z",
+      "updatedAt": "2025-09-14T18:52:41.541Z",
+      "id": "HShgCAp90lWr4iVI",
+      "name": "Whatsapp"
+    }
+  ]
+}

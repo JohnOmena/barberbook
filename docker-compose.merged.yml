@@ -1,0 +1,111 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-barberbook}
+      POSTGRES_USER: ${POSTGRES_USER:-barber}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-barberpass}
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server","--appendonly","yes"]
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD","redis-cli","ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  barberbook-api:
+    build:
+      context: .
+      dockerfile: BarberBook.Api/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+
+      # (1) ConnectionStrings padr�o
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-barberbook};Username=${POSTGRES_USER:-barber};Password=${POSTGRES_PASSWORD:-barberpass}"
+      # (2) Outras chaves comuns
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-barberbook};Username=${POSTGRES_USER:-barber};Password=${POSTGRES_PASSWORD:-barberpass}"
+      Database__ConnectionString: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-barberbook};Username=${POSTGRES_USER:-barber};Password=${POSTGRES_PASSWORD:-barberpass}"
+      # (3) Vari�veis unit�rias (caso o c�digo monte a string manualmente)
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-barberbook}
+      POSTGRES_USER: ${POSTGRES_USER:-barber}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-barberpass}
+      # (4) DATABASE_URL gen�rica
+      DATABASE_URL: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-barberbook};Username=${POSTGRES_USER:-barber};Password=${POSTGRES_PASSWORD:-barberpass}"
+
+      # Redis
+      Redis__Host: redis
+      Redis__Port: 6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${API_HOST_PORT:-8080}:8080"
+
+  barberbook-web:
+    build:
+      context: .
+      dockerfile: BarberBook.Web/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:5161
+      # Base da API para o painel. Ajuste WEB_API_BASE_URL para seu IP se for acessar do celular.
+      Api__BaseUrl: ${WEB_API_BASE_URL:-http://host.docker.internal:8080}
+      Admin__Username: ${ADMIN_USERNAME:-admin}
+      Admin__Password: ${ADMIN_PASSWORD:-admin}
+      Admin__TenantId: ${ADMIN_TENANT_ID:-}
+    depends_on:
+      - barberbook-api
+    ports:
+      - "${WEB_HOST_PORT:-5161}:5161"
+
+  waha:
+    image: devlikeapro/waha:latest
+    platform: linux/amd64
+    environment:
+      WHATSAPP_HOOK_URL: "http://n8n:5678/webhook/wa-incoming"
+      WHATSAPP_DEFAULT_ENGINE: WEBJS
+      WHATSAPP_HOOK_EVENTS: message.any
+    volumes:
+      - waha_sessions:/app/.sessions
+      - waha_media:/app/.media
+    ports:
+      - "${WAHA_HOST_PORT:-3000}:3000"
+
+  n8n:
+    image: n8nio/n8n:latest
+    platform: linux/amd64
+    environment:
+      WEBHOOK_URL: http://host.docker.internal:5678
+      N8N_HOST: host.docker.internal
+      GENERIC_TIMEZONE: America/Sao_Paulo
+      N8N_LOG_LEVEL: debug
+      N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE: true
+    volumes:
+      - n8n_data:/home/node/.n8n
+    ports:
+      - "5678:5678"
+volumes:
+  db_data:
+  redis_data:
+  n8n_data:
+  waha_data:
+  waha_sessions:
+  waha_media:
