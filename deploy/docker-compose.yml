@@ -1,7 +1,23 @@
-﻿version: "3.8"
+version: "3.8"
 services:
   postgres:
     image: postgres:15
+    command:
+      - postgres
+      - -c
+      - shared_buffers=64MB
+      - -c
+      - max_connections=20
+      - -c
+      - work_mem=2MB
+      - -c
+      - effective_cache_size=192MB
+      - -c
+      - wal_buffers=2MB
+      - -c
+      - maintenance_work_mem=32MB
+      - -c
+      - autovacuum_naptime=60s
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -10,11 +26,22 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
+    mem_limit: 256m
 
   redis:
     image: redis:7
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    command:
+      - redis-server
+      - --requirepass
+      - "${REDIS_PASSWORD}"
+      - --maxmemory
+      - 64mb
+      - --maxmemory-policy
+      - allkeys-lru
+      - --appendonly
+      - "no"
     restart: unless-stopped
+    mem_limit: 64m
 
   barberbook-api:
     image: ghcr.io/seu-usuario/barberbook-api:latest
@@ -26,9 +53,11 @@ services:
       - TZ=America/Maceio
       - Auth__AdminUser=${ADMIN_USER}
       - Auth__AdminPass=${ADMIN_PASS}
+      - DOTNET_ThreadPool_ForceMinWorkerThreads=1
     ports:
       - "${API_PORT}:${API_PORT}"
     restart: unless-stopped
+    mem_limit: 256m
 
   barberbook-web:
     image: ghcr.io/seu-usuario/barberbook-web:latest
@@ -37,9 +66,11 @@ services:
       - ASPNETCORE_URLS=http://+:${WEB_PORT}
       - Api__BaseUrl=http://barberbook-api:${API_PORT}
       - TZ=America/Maceio
+      - DOTNET_ThreadPool_ForceMinWorkerThreads=1
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
     restart: unless-stopped
+    mem_limit: 128m
 
   n8n:
     image: n8nio/n8n:latest
@@ -51,11 +82,16 @@ services:
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
       - N8N_LOG_LEVEL=info
       - TZ=America/Maceio
+      - EXECUTIONS_PROCESS=main
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_METRICS=false
+      - NODE_OPTIONS=--max-old-space-size=128
     ports:
       - "5678:5678"
     volumes:
       - n8n_data:/home/node/.n8n
     restart: unless-stopped
+    mem_limit: 128m
 
   waha:
     image: devlikeapro/whatsapp-http-api:latest
@@ -63,12 +99,17 @@ services:
       - WAHA_WEBHOOK_URL=http://n8n:5678/webhook/wa-incoming
       - WAHA_LOG_LEVEL=info
       - TZ=America/Maceio
+      - WAHA_PROVIDER=baileys
+      - WAHA_HTTP_PORT=${WAHA_PORT}
+      - WAHA_PUBLIC_URL=${WAHA_PUBLIC_URL}
+      - WAHA_GUI=false
     ports:
       - "${WAHA_PORT}:3000"
     volumes:
       - waha_sessions:/app/session
       - waha_media:/app/media
     restart: unless-stopped
+    mem_limit: 128m
 
 volumes:
   pgdata:
