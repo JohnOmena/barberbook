@@ -10,29 +10,22 @@
         "projectUniqueName": "C:\\dev\\barberbook\\BarberBook.Application\\BarberBook.Application.csproj",
         "projectName": "BarberBook.Application",
         "projectPath": "C:\\dev\\barberbook\\BarberBook.Application\\BarberBook.Application.csproj",
-        "packagesPath": "C:\\Users\\john_\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\JohnOmena\\.nuget\\packages\\",
         "outputPath": "C:\\dev\\barberbook\\BarberBook.Application\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\DevExpress 24.1\\Components\\Offline Packages",
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
           "C:\\dev\\barberbook\\NuGet.Config",
-          "C:\\Users\\john_\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\JohnOmena\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net9.0"
+          "net8.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net9.0": {
-            "targetAlias": "net9.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {
               "C:\\dev\\barberbook\\BarberBook.Domain\\BarberBook.Domain.csproj": {
                 "projectPath": "C:\\dev\\barberbook\\BarberBook.Domain\\BarberBook.Domain.csproj"
@@ -50,12 +43,11 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.200"
+        }
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "FluentValidation": {
               "target": "Package",
@@ -82,7 +74,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.414/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -92,29 +84,22 @@
         "projectUniqueName": "C:\\dev\\barberbook\\BarberBook.Domain\\BarberBook.Domain.csproj",
         "projectName": "BarberBook.Domain",
         "projectPath": "C:\\dev\\barberbook\\BarberBook.Domain\\BarberBook.Domain.csproj",
-        "packagesPath": "C:\\Users\\john_\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\JohnOmena\\.nuget\\packages\\",
         "outputPath": "C:\\dev\\barberbook\\BarberBook.Domain\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\DevExpress 24.1\\Components\\Offline Packages",
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
           "C:\\dev\\barberbook\\NuGet.Config",
-          "C:\\Users\\john_\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\JohnOmena\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net9.0"
+          "net8.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net9.0": {
-            "targetAlias": "net9.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -128,12 +113,11 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.200"
+        }
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "imports": [
             "net461",
             "net462",
@@ -150,7 +134,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.414/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -160,29 +144,22 @@
         "projectUniqueName": "C:\\dev\\barberbook\\BarberBook.Infrastructure\\BarberBook.Infrastructure.csproj",
         "projectName": "BarberBook.Infrastructure",
         "projectPath": "C:\\dev\\barberbook\\BarberBook.Infrastructure\\BarberBook.Infrastructure.csproj",
-        "packagesPath": "C:\\Users\\john_\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\JohnOmena\\.nuget\\packages\\",
         "outputPath": "C:\\dev\\barberbook\\BarberBook.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\DevExpress 24.1\\Components\\Offline Packages",
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
           "C:\\dev\\barberbook\\NuGet.Config",
-          "C:\\Users\\john_\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\JohnOmena\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net9.0"
+          "net8.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net9.0": {
-            "targetAlias": "net9.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {
               "C:\\dev\\barberbook\\BarberBook.Application\\BarberBook.Application.csproj": {
                 "projectPath": "C:\\dev\\barberbook\\BarberBook.Application\\BarberBook.Application.csproj"
@@ -203,24 +180,23 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.200"
+        }
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.EntityFrameworkCore.Design": {
               "target": "Package",
-              "version": "[9.*, )"
+              "version": "[8.*, )"
             },
             "Npgsql": {
               "target": "Package",
-              "version": "[9.*, )"
+              "version": "[8.*, )"
             },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
-              "version": "[9.*, )"
+              "version": "[8.*, )"
             }
           },
           "imports": [
@@ -239,7 +215,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.414/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
