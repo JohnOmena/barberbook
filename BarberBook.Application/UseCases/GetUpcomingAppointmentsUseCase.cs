@@ -58,7 +58,7 @@ public sealed class GetUpcomingAppointmentsUseCase
         var envTz = System.Environment.GetEnvironmentVariable("BB_TIMEZONE")
                  ?? System.Environment.GetEnvironmentVariable("TZ")
                  ?? System.Environment.GetEnvironmentVariable("TIMEZONE");
-        string[] ids = new[]
+        string?[] ids = new string?[]
         {
             envTz,
             "America/Sao_Paulo",
