@@ -53,25 +53,29 @@ public sealed class GetUpcomingAppointmentsUseCase
         return Task.FromResult((IReadOnlyList<UpcomingItemDto>)items);
     }
 
-    private static System.TimeZoneInfo ResolveBusinessTimeZone()
+    private static TimeZoneInfo ResolveBusinessTimeZone()
     {
-        var envTz = System.Environment.GetEnvironmentVariable("BB_TIMEZONE")
-                 ?? System.Environment.GetEnvironmentVariable("TZ")
-                 ?? System.Environment.GetEnvironmentVariable("TIMEZONE");
-        string?[] ids = new string?[]
+        var envTz = Environment.GetEnvironmentVariable("BB_TIMEZONE")
+                 ?? Environment.GetEnvironmentVariable("TZ")
+                 ?? Environment.GetEnvironmentVariable("TIMEZONE");
+
+        var ids = new[]
         {
             envTz,
             "America/Sao_Paulo",
             "America/Maceio",
             "E. South America Standard Time",
             "SA Eastern Standard Time"
-        };
+        }
+        .Where(id => !string.IsNullOrWhiteSpace(id))
+        .Select(id => id!)
+        .ToArray();
+
         foreach (var id in ids)
         {
-            if (string.IsNullOrWhiteSpace(id)) continue;
-            try { return System.TimeZoneInfo.FindSystemTimeZoneById(id); } catch { }
+            try { return TimeZoneInfo.FindSystemTimeZoneById(id); } catch { }
         }
         // Fallback: fixed -03:00 (BRT)
-        return System.TimeZoneInfo.CreateCustomTimeZone("BRT", System.TimeSpan.FromHours(-3), "BRT", "BRT");
+        return TimeZoneInfo.CreateCustomTimeZone("BRT", TimeSpan.FromHours(-3), "BRT", "BRT");
     }
 }
