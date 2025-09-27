@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -114,7 +114,7 @@ public class ApiIntegrationTests : IAsyncLifetime
         var bookRes = await client.PostAsJsonAsync("/api/book", createReq);
         bookRes.EnsureSuccessStatusCode();
         var booking = await bookRes.Content.ReadFromJsonAsync<BookingResponse>();
-        Assert.Equal(AppointmentStatus.Confirmed, booking.Status);
+        Assert.Equal(AppointmentStatus.Pending, booking.Status);
 
         // Cancel
         var cancelRes = await client.PostAsJsonAsync("/api/cancel", new { appointmentId = booking.Id, reason = "test" });
@@ -129,3 +129,4 @@ public class ApiIntegrationTests : IAsyncLifetime
 public readonly record struct SlotDto(DateTime StartUtc, DateTime EndUtc);
 public readonly record struct CreateBookingRequest(Guid TenantId, Guid ServiceId, DateTime StartUtc, string ClientName, string ClientContact);
 public readonly record struct BookingResponse(Guid Id, DateTime StartsAt, DateTime EndsAt, AppointmentStatus Status);
+

@@ -2,40 +2,43 @@
 @model BarberBook.Web.Pages.Admin.IndexModel
 @{
     ViewData["Title"] = "Painel";
+    ViewData["BodyClass"] = "admin";
 }
 
 @section Head {
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 }
 
-<div class="page admin">
-  <div class="toolbar">
-    <div class="row row-top">
-      <label for="date" class="muted">Data</label>
-      <input id="date" type="date" />
-      <button id="btnPrev" class="ghost" type="button" title="Dia anterior">&lsaquo;</button>
-      <button id="btnNext" class="ghost" type="button" title="Próximo dia">&rsaquo;</button>
-    </div>
-    <div class="row row-mid">
-      <div class="row" style="gap:8px">
-        <label for="svc" class="muted">Encaixe</label>
-        <select id="svc"></select>
-        <button class="primary" id="btnEncaixe" type="button">Criar no próximo slot</button>
-        <span id="msg" class="muted"></span>
-      </div>
-      <div class="row">
+<div class="page admin" data-page="admin-dashboard">
+  <div class="panel">
+    <div class="toolbar">
+      <div class="row date-row">
+        <div class="date-inputs">
+          <label for="date" class="muted">Data</label>
+          <input id="date" type="date" aria-label="Selecionar data" />
+          <button id="btnPrev" class="ghost icon" type="button" title="Dia anterior" aria-label="Dia anterior">&lsaquo;</button>
+          <button id="btnNext" class="ghost icon" type="button" title="Próximo dia" aria-label="Próximo dia">&rsaquo;</button>
+        </div>
         <button id="btnReload" class="ghost" type="button">Atualizar</button>
       </div>
+      <div class="row">
+        <label for="svc" class="muted">Encaixe</label>
+        <select id="svc" aria-label="Selecionar serviço para encaixe"></select>
+        <button class="primary" id="btnEncaixe" type="button">Criar no próximo slot</button>
+        <span id="msg" class="muted" aria-live="polite"></span>
+      </div>
     </div>
+
+    <section id="list" class="cards" aria-live="polite">
+      <div class="card sk-card skeleton"></div>
+      <div class="card sk-card skeleton"></div>
+      <div class="card sk-card skeleton"></div>
+    </section>
+
+    <footer class="summary" id="totals" aria-live="polite"></footer>
   </div>
 
-  <div id="list" class="cards">
-    <div class="card sk-card skeleton"></div>
-    <div class="card sk-card skeleton"></div>
-    <div class="card sk-card skeleton"></div>
-  </div>
-  <div class="footer" id="totals"></div>
-  <button class="fab" id="fabEncaixe" type="button" aria-label="Criar encaixe">＋ Encaixe</button>
+  <button class="fab" id="fabEncaixe" type="button" aria-label="Criar encaixe">&#x2795; Encaixe</button>
 </div>
 
 <div id="backdrop" class="backdrop"></div>
@@ -47,8 +50,8 @@
   </div>
   <div class="row">
     <label for="mSlots" class="muted">Horário</label>
-      <select id="mSlots"></select>
-      <input id="mTime" type="time" step="900" style="display:none" />
+    <select id="mSlots"></select>
+    <input id="mTime" type="time" step="900" style="display:none" />
   </div>
   <div class="row">
     <input id="mName" placeholder="Nome do cliente" />
@@ -62,293 +65,682 @@
   <input type="hidden" id="mApptId" />
 </div>
 
+<div id="toast" class="toast" role="status" aria-live="assertive"></div>
+
 <script>
     const API_BASE = '@Model.ApiBaseUrl';
-    // Corrige API quando configurada com nome do serviço Docker (barberbook-api), usando host local
     let apiBase = API_BASE;
     try {
-        const u = new URL(API_BASE);
-        if (u.hostname === 'barberbook-api') {
+        const parsed = new URL(API_BASE);
+        if (parsed.hostname === 'barberbook-api') {
             apiBase = `${location.protocol}//${location.hostname}:8080`;
         }
-    } catch { apiBase = API_BASE; }
-    let TENANT_ID = '@Model.TenantId';
-    const toast = (msg)=>{
-        try{ document.getElementById('modal')?.classList.remove('show'); document.getElementById('backdrop')?.classList.remove('show'); }catch{}
-        const el=document.getElementById('toast');
-        el.textContent=msg; el.classList.add('show');
-        setTimeout(()=>el.classList.remove('show'), 2500);
-    };
-    const statusBadge = s => {
-        const map = { Confirmed:'info', Pending:'warn', CheckIn:'info', InService:'info', Done:'success', NoShow:'danger', Cancelled:'danger' };
-        const cls = map[s]||'info';
-        return `<span class="badge ${cls}">${s}</span>`;
-    };
-
-    async function fetchJson(url, options={}) {
-        const res = await fetch(url, { headers: { 'Content-Type':'application/json' }, ...options });
-        const txt = await res.text();
-        if(!res.ok) throw new Error(txt || `${res.status}`);
-        if(!txt) return null;
-        try { return JSON.parse(txt); } catch { return null; }
+    } catch {
+        apiBase = API_BASE;
     }
 
-    function fmtTime(iso){ const d = new Date(iso); return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
-    const DURATION_OVERRIDES = (()=>{ const m=new Map(); const put=(n,min)=>m.set((n||'').toLowerCase(),min);
-        put('Degrade na zero',30); put('Degrade navalhado',40); put('Corte social máquina e tesoura',20); put('Corte só máquina',20);
-        put('corte na tesoura',30); put('Barba',20); put('Pé de cabelo e sobrancelha',10); put('Cabelo e barba',50); return m; })();
-    const SERVICES_BY_ID = new Map(); const SERVICES_BY_NAME = new Map();
-    function getDurationFor(serviceId, serviceName){ if(serviceId&&SERVICES_BY_ID.has(serviceId)) return SERVICES_BY_ID.get(serviceId).durationMin;
-        const key=(serviceName||'').toLowerCase(); if(DURATION_OVERRIDES.has(key)) return DURATION_OVERRIDES.get(key);
-        if(SERVICES_BY_NAME.has(key)) return SERVICES_BY_NAME.get(key).durationMin; return null; }
-    function addMinutesIso(iso, minutes){ const d=new Date(iso); d.setMinutes(d.getMinutes()+(minutes||0)); return d.toISOString(); }
-    function toUtcIso(dateStr, timeStr){
-        if(!dateStr || !timeStr) return '';
-        const [y,m,d] = dateStr.split('-').map(Number);
-        const [hh,mm] = (timeStr||'00:00').split(':').map(Number);
-        // Converte hora local selecionada para o instante UTC correto
-        // new Date(y,m-1,d,hh,mm) já representa o horário local; toISOString() devolve o UTC equivalente
-        const local = new Date(y, (m||1)-1, d||1, hh||0, mm||0, 0);
+    let TENANT_ID = '@Model.TenantId';
+
+    const toast = (message) => {
+        try {
+            document.getElementById('modal')?.classList.remove('show');
+            document.getElementById('backdrop')?.classList.remove('show');
+        } catch { /* ignore */ }
+        const el = document.getElementById('toast');
+        if (!el) return;
+        el.textContent = message;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2500);
+    };
+
+    const statusBadge = (status) => {
+        const map = {
+            Confirmed: 'info',
+            Pending: 'warn',
+            CheckIn: 'info',
+            InService: 'info',
+            Done: 'success',
+            NoShow: 'danger',
+            Cancelled: 'danger'
+        };
+        const cls = map[status] || 'info';
+        return `<span class="badge ${cls}">${status}</span>`;
+    };
+
+    const escapeHtml = (value) => (value ?? '').toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const escapeAttr = escapeHtml;
+
+    async function fetchJson(url, options = {}) {
+        const response = await fetch(url, {
+            headers: { 'Content-Type': 'application/json' },
+            ...options
+        });
+        const text = await response.text();
+        if (!response.ok) {
+            throw new Error(text || `${response.status}`);
+        }
+        if (!text) {
+            return null;
+        }
+        try {
+            return JSON.parse(text);
+        } catch {
+            return null;
+        }
+    }
+
+    const formatCurrency = (value) => Number(value ?? 0)
+        .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const toKey = (value) => (value ?? '').toString().toLowerCase();
+    const removeDiacritics = (value) => {
+        try {
+            return (value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        } catch {
+            return value ?? '';
+        }
+    };
+
+    const keyVariants = (value) => {
+        const base = toKey(value);
+        const stripped = removeDiacritics(base);
+        return stripped && stripped !== base ? [base, stripped] : [base];
+    };
+
+    const fmtTime = (iso) => {
+        const date = new Date(iso);
+        if (Number.isNaN(date.getTime())) {
+            return '';
+        }
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const DURATION_PRESETS = [
+        { name: 'Degradê na Zero', minutes: 30 },
+        { name: 'Degradê Navalhado (com navalha)', minutes: 40 },
+        { name: 'Corte Social (Máquina + Tesoura)', minutes: 20 },
+        { name: 'Corte Só Máquina', minutes: 20 },
+        { name: 'Corte na Tesoura', minutes: 30 },
+        { name: 'Barba', minutes: 20 },
+        { name: 'Acabamento (Pezinho) + Sobrancelha', minutes: 10 },
+        { name: 'Combo: Cabelo + Barba', minutes: 50 }
+    ];
+
+    const DURATION_OVERRIDES = (() => {
+        const map = new Map();
+        const register = (key, minutes) => {
+            if (key && !map.has(key)) {
+                map.set(key, minutes);
+            }
+        };
+        DURATION_PRESETS.forEach(item => {
+            keyVariants(item.name).forEach(k => register(k, item.minutes));
+        });
+        return map;
+    })();
+
+    const SERVICES_BY_ID = new Map();
+    const SERVICES_BY_NAME = new Map();
+
+    function getDurationFor(serviceId, serviceName) {
+        if (serviceId && SERVICES_BY_ID.has(serviceId)) {
+            return SERVICES_BY_ID.get(serviceId).durationMin;
+        }
+        for (const key of keyVariants(serviceName)) {
+            if (DURATION_OVERRIDES.has(key)) {
+                return DURATION_OVERRIDES.get(key);
+            }
+            if (SERVICES_BY_NAME.has(key)) {
+                return SERVICES_BY_NAME.get(key).durationMin;
+            }
+        }
+        return null;
+    }
+
+    const addMinutesIso = (iso, minutes) => {
+        const date = new Date(iso);
+        if (Number.isNaN(date.getTime())) {
+            return iso;
+        }
+        date.setMinutes(date.getMinutes() + (minutes || 0));
+        return date.toISOString();
+    };
+
+    function toUtcIso(dateStr, timeStr) {
+        if (!dateStr || !timeStr) {
+            return '';
+        }
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const [hh, mm] = (timeStr || '00:00').split(':').map(Number);
+        const local = new Date(y || 0, (m || 1) - 1, d || 1, hh || 0, mm || 0, 0);
         return local.toISOString();
     }
-    function ensureManualTimeFallback(){
-        const mSlots = document.getElementById('mSlots'); const mTime = document.getElementById('mTime');
-        if(!mSlots || !mTime) return;
-        try{
-            const opts = mSlots.options || [];
-            const noSlots = (opts.length===0) || (opts.length===1 && opts[0].disabled);
-            if(noSlots){
-                mSlots.style.display='none'; mTime.style.display='';
-                const date = document.getElementById('date').value;
+
+    function ensureManualTimeFallback() {
+        const mSlots = document.getElementById('mSlots');
+        const mTime = document.getElementById('mTime');
+        if (!mSlots || !mTime) {
+            return;
+        }
+        try {
+            const options = mSlots.options || [];
+            const noSlots = options.length === 0 || (options.length === 1 && options[0].disabled);
+            if (noSlots) {
+                mSlots.style.display = 'none';
+                mTime.style.display = '';
+                const dateStr = document.getElementById('date')?.value;
                 const now = new Date();
-                const selectedDate = new Date(date+'T00:00:00');
-                if(selectedDate.toDateString() === now.toDateString()){
-                    // Ajusta para agora + 30min e arredonda para o próximo quarto de hora
-                    const future = new Date(now.getTime() + 30*60000);
-                    const step = 15;
-                    const rem = future.getMinutes() % step;
-                    if(rem !== 0){ future.setMinutes(future.getMinutes() + (step - rem)); }
-                    future.setSeconds(0); future.setMilliseconds(0);
-                    mTime.value = future.toTimeString().slice(0,5);
+                const selected = dateStr ? new Date(`${dateStr}T00:00:00`) : new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                if (selected.toDateString() === now.toDateString()) {
+                    const stepMinutes = 15;
+                    const future = new Date(now.getTime() + 30 * 60000);
+                    const remainder = future.getMinutes() % stepMinutes;
+                    if (remainder !== 0) {
+                        future.setMinutes(future.getMinutes() + (stepMinutes - remainder));
+                    }
+                    future.setSeconds(0);
+                    future.setMilliseconds(0);
+                    mTime.value = future.toTimeString().slice(0, 5);
                 } else {
                     mTime.value = '09:00';
                 }
             } else {
-                mSlots.style.display=''; mTime.style.display='none';
+                mSlots.style.display = '';
+                mTime.style.display = 'none';
             }
-        }catch{}
+        } catch {
+            // ignore
+        }
     }
 
-    async function loadServices(){
+    const renderEmptyState = () => '<div class="empty">Nenhum agendamento para esta data</div>';
+
+    function selectServiceByName(selectEl, serviceName) {
+        if (!selectEl || !serviceName) {
+            return;
+        }
+        const variants = keyVariants(serviceName);
+        for (const option of selectEl.options) {
+            const optionName = option.dataset?.name || option.text || '';
+            const optionVariants = keyVariants(optionName);
+            if (optionVariants.some(optKey => variants.some(target => target === optKey))) {
+                option.selected = true;
+                return;
+            }
+        }
+    }
+
+    async function loadServices() {
         const select = document.getElementById('svc');
+        const modalSelect = document.getElementById('mSvc');
+        if (!select || !modalSelect) {
+            return;
+        }
         select.innerHTML = '<option>Carregando...</option>';
-        const data = await fetchJson(`${apiBase}/api/services`);
-        SERVICES_BY_ID.clear(); SERVICES_BY_NAME.clear(); data.forEach(s=>{ SERVICES_BY_ID.set(s.id,s); SERVICES_BY_NAME.set((s.name||'').toLowerCase(), s); });
-        select.innerHTML = data.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-        // modal services
-        const mSvc = document.getElementById('mSvc');
-        mSvc.innerHTML = select.innerHTML;
+        modalSelect.innerHTML = select.innerHTML;
+        try {
+            const data = await fetchJson(`${apiBase}/api/services`);
+            if (!Array.isArray(data)) {
+                throw new Error('Resposta invalida dos servicos');
+            }
+            const services = [];
+            const usedIds = new Set();
+            DURATION_PRESETS.forEach(preset => {
+                const presetVariants = keyVariants(preset.name);
+                const match = (data || []).find(service => {
+                    if (!service?.id || usedIds.has(service.id)) {
+                        return false;
+                    }
+                    const serviceVariants = keyVariants(service?.name ?? '');
+                    return serviceVariants.some(sv => presetVariants.some(pv => pv === sv));
+                });
+                if (match) {
+                    services.push(match);
+                    usedIds.add(match.id);
+                }
+            });
+            if (services.length === 0) {
+                const allowed = new Set();
+                DURATION_PRESETS.forEach(item => {
+                    keyVariants(item.name).forEach(k => allowed.add(k));
+                });
+                (data || []).forEach(service => {
+                    const serviceVariants = keyVariants(service?.name ?? '');
+                    if (serviceVariants.some(v => allowed.has(v))) {
+                        services.push(service);
+                    }
+                });
+            }
+            SERVICES_BY_ID.clear();
+            SERVICES_BY_NAME.clear();
+            if (services.length === 0) {
+                const fail = 'Nenhum serviço permitido encontrado';
+                const fallback = `<option disabled>${fail}</option>`;
+                select.innerHTML = fallback;
+                modalSelect.innerHTML = fallback;
+                toast(fail);
+                return;
+            }
+            const options = services.map(service => {
+                const name = service?.name ?? '';
+                const priceSuffix = typeof service?.price === 'number' ? ` - ${formatCurrency(service.price)}` : '';
+                keyVariants(name).forEach(k => {
+                    if (!SERVICES_BY_NAME.has(k)) {
+                        SERVICES_BY_NAME.set(k, service);
+                    }
+                });
+                if (service?.id) {
+                    SERVICES_BY_ID.set(service.id, service);
+                }
+                const dataName = escapeAttr(name);
+                return `<option value="${service.id}" data-name="${dataName}">${escapeHtml(name)}${priceSuffix}</option>`;
+            }).join('');
+            select.innerHTML = options;
+            modalSelect.innerHTML = options;
+        } catch (error) {
+            const fail = 'Falha ao carregar serviços';
+            const fallback = `<option disabled>${fail}</option>`;
+            select.innerHTML = fallback;
+            modalSelect.innerHTML = fallback;
+            toast(`${fail}: ${error.message}`);
+        }
+    }        select.innerHTML = '<option>Carregando...</option>';
+        modalSelect.innerHTML = select.innerHTML;
+        try {
+            const data = await fetchJson(`${apiBase}/api/services`);
+            if (!Array.isArray(data)) {
+                throw new Error('Resposta invalida dos servicos');
+            }
+            SERVICES_BY_ID.clear();
+            SERVICES_BY_NAME.clear();
+            const options = data.map(service => {
+                const name = service?.name ?? '';
+                const priceSuffix = typeof service?.price === 'number' ? ` - ${formatCurrency(service.price)}` : '';
+                keyVariants(name).forEach(k => {
+                    if (!SERVICES_BY_NAME.has(k)) {
+                        SERVICES_BY_NAME.set(k, service);
+                    }
+                });
+                if (service?.id) {
+                    SERVICES_BY_ID.set(service.id, service);
+                }
+                const dataName = escapeAttr(name);
+                return `<option value="${service.id}" data-name="${dataName}">${escapeHtml(name)}${priceSuffix}</option>`;
+            }).join('');
+            select.innerHTML = options;
+            modalSelect.innerHTML = options;
+        } catch (error) {
+            const fail = 'Falha ao carregar serviços';
+            const fallback = `<option disabled>${fail}</option>`;
+            select.innerHTML = fallback;
+            modalSelect.innerHTML = fallback;
+            toast(`${fail}: ${error.message}`);
+        }
     }
 
-    async function loadDay(){
-        const date = document.getElementById('date').value;
-        const data = await fetchJson(`${apiBase}/api/status-dia?date=${date}`);
+    async function loadDay() {
+        const date = document.getElementById('date')?.value;
+        if (!date) {
+            return;
+        }
         const list = document.getElementById('list');
-        const now = new Date();
-        const html = (data.items||[]).map(it=>{
-            const st = it.status;
-            const startDate = new Date(it.startsAt);
-            const endLabel = it.endsAt ? fmtTime(it.endsAt) : (function(){ const d=getDurationFor(null, it.serviceName); return d ? fmtTime(addMinutesIso(it.startsAt, d)) : ''; })();
-            const canCheckIn = (st==='Confirmed' || st==='Pending');
-            const canInService = (st==='CheckIn');
-            const canDone = (st==='InService');
-            const canNoShow = (st==='Confirmed' && now >= new Date(startDate.getTime() + 15*60000));
-            const isFinal = (st==='Done' || st==='Cancelled');
-            const canDelete = (st==='Cancelled');
-            return `
-            <div class='card'>
-              <div class='title'>${fmtTime(it.startsAt)} · ${it.serviceName}</div>
-              <div class='muted'>${it.clientName || ''}</div>
-              <div class='muted'>${endLabel? 'Término: '+endLabel : ''}${it.clientContact ? (endLabel? ' • ' : '') + 'Contato: '+it.clientContact : ''}</div>
-              <div style='margin-top:6px'>${statusBadge(it.status)}</div>
-              <div class='actions'>
-                ${canCheckIn ? `<button class='ghost' onclick="updateStatus('${it.id}','CheckIn')">Check‑in</button>` : ''}
-                ${canInService ? `<button class='ghost' onclick="updateStatus('${it.id}','InService')">Iniciar</button>` : ''}
-                ${canDone ? `<button class='ghost' onclick="updateStatus('${it.id}','Done')">Finalizar</button>` : ''}
-                ${canNoShow ? `<button class='ghost' onclick="updateStatus('${it.id}','NoShow')">No‑show</button>` : ''}
-                <button class='ghost' onclick="openReschedule('${it.id}','${it.serviceName}','${it.startsAt}')">Remarcar</button>
-                <button class='ghost' onclick="openEdit('${it.id}','${it.serviceName}','${it.startsAt}','${(it.clientName||'').replace(/"/g,'&quot;')}')">Editar</button>
-                ${!isFinal ? `<button class='ghost' onclick="cancel('${it.id}')">Cancelar</button>` : ''}
-                ${canDelete ? `<button class='ghost danger' onclick="deleteAppt('${it.id}')">Excluir</button>` : ''}
-              </div>
-            </div>`;
-        }).join('');
-        list.innerHTML = html;
-        document.getElementById('totals').textContent = `Total: ${data.totals} | Caixa: R$ ${Number(data.cash).toFixed(2)}`;
+        const totalsEl = document.getElementById('totals');
+        if (!list) {
+            return;
+        }
+        list.innerHTML = '<div class="card sk-card skeleton"></div>';
+        try {
+            const data = await fetchJson(`${apiBase}/api/status-dia?date=${date}`);
+            const items = Array.isArray(data?.items) ? data.items : [];
+            const now = new Date();
+            const cards = items.map(item => {
+                const endGuessMinutes = getDurationFor(null, item.serviceName);
+                const endLabel = item.endsAt
+                    ? fmtTime(item.endsAt)
+                    : (endGuessMinutes ? fmtTime(addMinutesIso(item.startsAt, endGuessMinutes)) : '');
+                const priceLabel = typeof item.price === 'number' ? formatCurrency(item.price) : '';
+                const infoLines = [];
+                if (item.clientName) {
+                    infoLines.push(`<p><span class="label">Cliente</span><span>${escapeHtml(item.clientName)}</span></p>`);
+                }
+                if (item.clientContact) {
+                    infoLines.push(`<p><span class="label">Contato</span><span>${escapeHtml(item.clientContact)}</span></p>`);
+                }
+                if (endLabel) {
+                    infoLines.push(`<p><span class="label">Término</span><span>${endLabel}</span></p>`);
+                }
+                if (priceLabel) {
+                    infoLines.push(`<p><span class="label">Preço</span><span>${priceLabel}</span></p>`);
+                }
+                const status = item.status;
+                const startDate = new Date(item.startsAt);
+                const canCheckIn = status === 'Confirmed' || status === 'Pending';
+                const canInService = status === 'CheckIn';
+                const canDone = status === 'InService';
+                const canNoShow = status === 'Confirmed' && now >= new Date(startDate.getTime() + 15 * 60000);
+                const isFinal = status === 'Done' || status === 'Cancelled';
+                const canDelete = status === 'Cancelled';
+                const idAttr = escapeAttr(item.id);
+                const nameAttr = escapeAttr(item.serviceName);
+                const startAttr = escapeAttr(item.startsAt);
+                const clientAttr = escapeAttr(item.clientName ?? '');
+                const contactAttr = escapeAttr(item.clientContact ?? '');
+                const actions = [
+                    canCheckIn ? `<button class='ghost' onclick="updateStatus('${idAttr}','CheckIn')">Confirmar</button>` : '',
+                    canInService ? `<button class='ghost' onclick="updateStatus('${idAttr}','InService')">Iniciar</button>` : '',
+                    canDone ? `<button class='ghost' onclick="updateStatus('${idAttr}','Done')">Finalizar</button>` : '',
+                    canNoShow ? `<button class='ghost' onclick="updateStatus('${idAttr}','NoShow')">No-show</button>` : '',
+                    `<button class='ghost' onclick="openReschedule('${idAttr}','${nameAttr}','${startAttr}','${clientAttr}','${contactAttr}')">Remarcar</button>`,
+                    `<button class='ghost' onclick="openEdit('${idAttr}','${nameAttr}','${startAttr}','${clientAttr}','${contactAttr}')">Editar</button>`,
+                    !isFinal ? `<button class='ghost' onclick="cancel('${idAttr}')">Cancelar</button>` : '',
+                    canDelete ? `<button class='ghost danger' onclick="deleteAppt('${idAttr}')">Excluir</button>` : ''
+                ].filter(Boolean).join('');
+                return `
+                <div class="card" data-status="${escapeAttr(status)}">
+                  <div class="card-header">
+                    <div>
+                      <span class="service">${escapeHtml(item.serviceName)}</span>
+                      <span class="range">${fmtTime(item.startsAt)}${endLabel ? ` &bull; ${endLabel}` : ''}</span>
+                    </div>
+                    ${priceLabel ? `<span class="badge info">${priceLabel}</span>` : ''}
+                  </div>
+                  <div class="card-body">${infoLines.join('')}</div>
+                  <div style="margin-top:10px">${statusBadge(status)}</div>
+                  <div class="actions">${actions}</div>
+                </div>`;
+            }).join('');
+            list.innerHTML = cards || renderEmptyState();
+            if (totalsEl) {
+                const count = Number.isFinite(Number(data?.totals)) ? Number(data.totals) : items.length;
+                const cashValue = Number(data?.cash ?? 0);
+                totalsEl.textContent = `Agendamentos: ${count} • Caixa: ${formatCurrency(cashValue)}`;
+            }
+        } catch (error) {
+            list.innerHTML = renderEmptyState();
+            if (totalsEl) {
+                totalsEl.textContent = '';
+            }
+            toast(`Falha ao carregar o dia: ${error.message}`);
+        }
     }
 
-    async function cancel(id){
-        try{
-            await fetchJson(`${apiBase}/api/cancel`, { method:'POST', body: JSON.stringify({ appointmentId: id, reason: 'admin' }) });
+    async function cancel(id) {
+        try {
+            await fetchJson(`${apiBase}/api/cancel`, {
+                method: 'POST',
+                body: JSON.stringify({ appointmentId: id, reason: 'admin' })
+            });
             await loadDay();
-        }catch(e){ toast('Erro ao cancelar: '+e.message); }
+            toast('Agendamento cancelado');
+        } catch (error) {
+            toast('Erro ao cancelar: ' + error.message);
+        }
     }
-    async function deleteAppt(id){
-        try{
-            await fetchJson(`${apiBase}/api/appointments/${id}`, { method:'DELETE' });
+
+    async function deleteAppt(id) {
+        try {
+            await fetchJson(`${apiBase}/api/appointments/${id}`, { method: 'DELETE' });
             await loadDay();
-        }catch(e){ toast('Erro ao excluir: '+e.message); }
+            toast('Agendamento removido');
+        } catch (error) {
+            toast('Erro ao excluir: ' + error.message);
+        }
     }
 
-    async function updateStatus(id, status){
-        try{
-            const res = await fetch(`${apiBase}/api/appointments/${id}/status/${status}`, { method:'POST', headers: { 'X-User': '@Model.Username' } });
-            if(!res.ok) throw new Error(await res.text());
+    async function updateStatus(id, status) {
+        try {
+            const response = await fetch(`${apiBase}/api/appointments/${id}/status/${status}`, {
+                method: 'POST',
+                headers: { 'X-User': '@Model.Username' }
+            });
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
             await loadDay();
-        }catch(e){ toast('Falha ao atualizar status: '+e.message); }
+        } catch (error) {
+            toast('Falha ao atualizar status: ' + error.message);
+        }
     }
 
-    async function encaixe(){
-        openSchedule();
+    async function ensureServicesLoaded() {
+        const modalSelect = document.getElementById('mSvc');
+        if (!modalSelect || modalSelect.options.length === 0) {
+            await loadServices();
+        }
+        const topSelect = document.getElementById('svc');
+        if (topSelect && modalSelect && topSelect.value && [...modalSelect.options].some(o => o.value === topSelect.value)) {
+            modalSelect.value = topSelect.value;
+        }
     }
 
-    function closeModal(){ document.getElementById('modal').classList.remove('show'); document.getElementById('backdrop').classList.remove('show'); }
-    async function ensureServicesLoaded(){
-        const mSvc = document.getElementById('mSvc');
-        if (!mSvc.options || mSvc.options.length === 0){ await loadServices(); }
-        // preselect top-level service if any selected
-        const selTop = document.getElementById('svc')?.value;
-        if (selTop && [...mSvc.options].some(o=>o.value===selTop)) { mSvc.value = selTop; }
+    function closeModal() {
+        document.getElementById('modal')?.classList.remove('show');
+        document.getElementById('backdrop')?.classList.remove('show');
     }
-    async function openSchedule(){
-        document.getElementById('mMode').value='create';
+
+    async function openSchedule() {
+        document.getElementById('mMode').value = 'create';
         await ensureTenantId();
         await ensureServicesLoaded();
-        document.getElementById('modal').classList.add('show'); document.getElementById('backdrop').classList.add('show');
-        const mSlotsInit = document.getElementById('mSlots'); if(mSlotsInit){ mSlotsInit.dataset.reset = '1'; }
+        document.getElementById('mName').value = '';
+        document.getElementById('mContact').value = '';
+        document.getElementById('modal')?.classList.add('show');
+        document.getElementById('backdrop')?.classList.add('show');
+        const mSlots = document.getElementById('mSlots');
+        if (mSlots) {
+            mSlots.dataset.reset = '1';
+        }
         await loadModalSlots();
         ensureManualTimeFallback();
     }
-    async function openReschedule(id, serviceName, startsAt){
-        document.getElementById('mMode').value='reschedule'; document.getElementById('mApptId').value=id;
-        // preselect service by name
-        const opts=[...document.getElementById('mSvc').options]; const match=opts.find(o=>o.text===serviceName); if(match){ match.selected=true; }
-        document.getElementById('mName').value=''; document.getElementById('mContact').value='';
-        document.getElementById('modal').classList.add('show'); document.getElementById('backdrop').classList.add('show');
-        await loadModalSlots();
+
+    async function openReschedule(id, serviceName, startsAt, clientName, clientContact) {
+        document.getElementById('mMode').value = 'reschedule';
+        document.getElementById('mApptId').value = id;
+        await ensureServicesLoaded();
+        selectServiceByName(document.getElementById('mSvc'), serviceName);
+        document.getElementById('mName').value = clientName ? clientName : '';
+        document.getElementById('mContact').value = clientContact ? clientContact : '';
+        document.getElementById('modal')?.classList.add('show');
+        document.getElementById('backdrop')?.classList.add('show');
+        await loadModalSlots(true, startsAt);
         ensureManualTimeFallback();
     }
-    async function openEdit(id, serviceName, startsAt, clientName){
-        // edit as reschedule to same time with new info
-        document.getElementById('mMode').value='edit'; document.getElementById('mApptId').value=id;
-        const opts=[...document.getElementById('mSvc').options]; const match=opts.find(o=>o.text===serviceName); if(match){ match.selected=true; }
-        document.getElementById('mName').value=clientName||''; document.getElementById('mContact').value='';
-        // set slots to include current time at top
-        document.getElementById('modal').classList.add('show'); document.getElementById('backdrop').classList.add('show');
-        await loadModalSlots(/*preferCurrent*/true, startsAt);
+
+    async function openEdit(id, serviceName, startsAt, clientName, clientContact) {
+        document.getElementById('mMode').value = 'edit';
+        document.getElementById('mApptId').value = id;
+        await ensureServicesLoaded();
+        selectServiceByName(document.getElementById('mSvc'), serviceName);
+        document.getElementById('mName').value = clientName ? clientName : '';
+        document.getElementById('mContact').value = clientContact ? clientContact : '';
+        document.getElementById('modal')?.classList.add('show');
+        document.getElementById('backdrop')?.classList.add('show');
+        await loadModalSlots(true, startsAt);
         ensureManualTimeFallback();
     }
-    async function loadModalSlots(preferCurrent=false, currentIso=null){
-        const svcId = document.getElementById('mSvc').value; const date = document.getElementById('date').value;
-        const mSlots = document.getElementById('mSlots'); const mTime = document.getElementById('mTime');
-        const shouldReset = mSlots?.dataset?.reset === '1'; if(mSlots) delete mSlots.dataset.reset;
-        if(mTime){ mSlots.style.display=''; mTime.style.display='none'; }
-        const prevValue = mSlots?.value || '';
+
+    async function loadModalSlots(preferCurrent = false, currentIso = null) {
+        const svcId = document.getElementById('mSvc')?.value;
+        const date = document.getElementById('date')?.value;
+        const mSlots = document.getElementById('mSlots');
+        const mTime = document.getElementById('mTime');
+        if (!mSlots) {
+            return;
+        }
+        const shouldReset = mSlots.dataset?.reset === '1';
+        delete mSlots.dataset?.reset;
+        if (mTime) {
+            mSlots.style.display = '';
+            mTime.style.display = 'none';
+        }
+        const prevValue = mSlots.value;
         mSlots.innerHTML = '<option>Carregando...</option>';
-        try{
-            if(!svcId){ mSlots.innerHTML = '<option disabled>Escolha um serviço</option>'; return; }
-            const slots = await fetchJson(`${apiBase}/api/slots?serviceId=${svcId}&date=${date}`);
-            let items = slots.map(s=>({ value:s.startUtc, label: `${fmtTime(s.startUtc)} - ${fmtTime(s.endUtc||addMinutesIso(s.startUtc, getDurationFor(document.getElementById('mSvc').value, null)||0))}`}));
-            if(preferCurrent && currentIso){ items = [{value:currentIso, label: fmtTime(currentIso)+' (atual)'}].concat(items); }
-            if(items.length===0){ mSlots.innerHTML = '<option disabled>Sem horários disponíveis</option>'; return; }
-            mSlots.innerHTML = items.map(x=>`<option value="${x.value}">${x.label}</option>`).join('');
-            if(!shouldReset && prevValue && items.some(x=>x.value===prevValue)){
+        try {
+            if (!svcId) {
+                mSlots.innerHTML = '<option disabled>Escolha um serviço</option>';
+                return;
+            }
+            const slots = await fetchJson(`${apiBase}/api/slots?serviceId=${svcId}&date=${date}`) || [];
+            const duration = getDurationFor(svcId, null) || 0;
+            let items = slots.map(slot => {
+                const end = slot.endUtc || addMinutesIso(slot.startUtc, duration);
+                return {
+                    value: slot.startUtc,
+                    label: `${fmtTime(slot.startUtc)} - ${fmtTime(end)}`
+                };
+            });
+            if (preferCurrent && currentIso) {
+                items = [{ value: currentIso, label: `${fmtTime(currentIso)} (atual)` }].concat(items);
+            }
+            if (items.length === 0) {
+                mSlots.innerHTML = '<option disabled>Sem horários disponíveis</option>';
+                ensureManualTimeFallback();
+                return;
+            }
+            mSlots.innerHTML = items.map(item => `<option value="${item.value}">${item.label}</option>`).join('');
+            if (!shouldReset && prevValue && items.some(item => item.value === prevValue)) {
                 mSlots.value = prevValue;
             } else {
                 mSlots.selectedIndex = 0;
             }
-        }catch(e){ mSlots.innerHTML = '<option disabled>Falha ao carregar horários</option>'; }
-    }
-    document.getElementById('mSvc')?.addEventListener('change', async ()=>{ await loadModalSlots(); ensureManualTimeFallback(); });
-    document.getElementById('mCancel')?.addEventListener('click', closeModal);
-    document.getElementById('mConfirm')?.addEventListener('click', async ()=>{
-        const mode = document.getElementById('mMode').value;
-        const svcId = document.getElementById('mSvc').value; 
-        let startUtc = document.getElementById('mSlots').value;
-        const manualTimeEl = document.getElementById('mTime');
-        if(manualTimeEl && manualTimeEl.style.display !== 'none'){
-            const date = document.getElementById('date').value; const t = manualTimeEl.value;
-            startUtc = toUtcIso(date, t);
+        } catch (error) {
+            mSlots.innerHTML = '<option disabled>Falha ao carregar horários</option>';
+            toast('Falha ao carregar horários: ' + error.message);
         }
-        // Valida futuro para evitar erro "StartUtc deve ser no futuro."
-        try{ const nowUtc = new Date(); const start = new Date(startUtc); if(!(start > nowUtc)) { toast('Escolha um horário no futuro'); return; } }catch{}
-        const name = document.getElementById('mName').value||'Cliente'; const contact = document.getElementById('mContact').value||'';
-        if(!TENANT_ID){ try{ await ensureTenantId(); }catch{} }
-        if(!TENANT_ID){ toast('Falha: tenant não configurado'); return; }
-        if(!svcId){ toast('Escolha um serviço'); return; }
-        if(!startUtc){ toast('Informe um horário'); return; }
-        try{
-            if(mode==='create'){
-                const body={ tenantId:TENANT_ID, serviceId:svcId, startUtc, clientName:name, clientContact:contact };
-                await fetchJson(`${apiBase}/api/book`, { method:'POST', body: JSON.stringify(body) });
-                toast('Agendado com sucesso');
-            } else if(mode==='reschedule'){
-                const id=document.getElementById('mApptId').value;
-                await fetchJson(`${apiBase}/api/cancel`, { method:'POST', body: JSON.stringify({ appointmentId:id, reason:'reschedule' }) });
-                const body={ tenantId:TENANT_ID, serviceId:svcId, startUtc, clientName:name||'Cliente', clientContact:contact };
-                await fetchJson(`${apiBase}/api/book`, { method:'POST', body: JSON.stringify(body) });
-                toast('Remarcado');
-            } else if(mode==='edit'){
-                const id=document.getElementById('mApptId').value;
-                // edit = cancel+book no mesmo horário
-                await fetchJson(`${apiBase}/api/cancel`, { method:'POST', body: JSON.stringify({ appointmentId:id, reason:'edit' }) });
-                const body={ tenantId:TENANT_ID, serviceId:svcId, startUtc, clientName:name, clientContact:contact };
-                await fetchJson(`${apiBase}/api/book`, { method:'POST', body: JSON.stringify(body) });
-                toast('Atualizado');
+        ensureManualTimeFallback();
+    }
+
+    async function encaixe() {
+        await openSchedule();
+    }
+
+    async function ensureTenantId() {
+        if (!TENANT_ID) {
+            try {
+                const tenant = await fetchJson(`${apiBase}/api/tenant-default`);
+                TENANT_ID = tenant?.id || '';
+            } catch {
+                // ignore
             }
-            closeModal(); await loadDay();
-        }catch(e){ toast('Falha: '+e.message); }
+        }
+    }
+
+    document.getElementById('mSvc')?.addEventListener('change', async () => {
+        await loadModalSlots();
+        ensureManualTimeFallback();
     });
 
-    async function ensureTenantId(){
-        if(!TENANT_ID){
-            try{
-                const t = await fetchJson(`${apiBase}/api/tenant-default`);
-                TENANT_ID = t.id;
-            }catch{ /* ignore */ }
-        }
-    }
+    document.getElementById('mCancel')?.addEventListener('click', () => {
+        closeModal();
+    });
 
-    document.addEventListener('DOMContentLoaded',async ()=>{
-        // Move date controls from row-top to row-mid to align with others
+    document.getElementById('mConfirm')?.addEventListener('click', async () => {
+        const mode = document.getElementById('mMode').value;
+        const svcId = document.getElementById('mSvc').value;
+        const name = document.getElementById('mName').value || 'Cliente';
+        const contact = document.getElementById('mContact').value || '';
+        const mSlots = document.getElementById('mSlots');
+        const manualTimeEl = document.getElementById('mTime');
+        let startUtc = mSlots?.value || '';
+        if (manualTimeEl && manualTimeEl.style.display !== 'none') {
+            const dateValue = document.getElementById('date').value;
+            startUtc = toUtcIso(dateValue, manualTimeEl.value);
+        }
+        if (!TENANT_ID) {
+            await ensureTenantId();
+        }
+        if (!TENANT_ID) {
+            toast('Falha: tenant não configurado');
+            return;
+        }
+        if (!svcId) {
+            toast('Escolha um serviço');
+            return;
+        }
+        if (!startUtc) {
+            toast('Informe um horário');
+            return;
+        }
         try {
-            const toolbar = document.querySelector('.toolbar');
-            const rowTop = toolbar?.querySelector('.row-top');
-            const rowMid = toolbar?.querySelector('.row-mid');
-            if (rowTop && rowMid) {
-                const newRow = document.createElement('div');
-                newRow.className = 'row';
-                while (rowTop.firstChild) { newRow.appendChild(rowTop.firstChild); }
-                rowMid.insertBefore(newRow, rowMid.firstChild);
-                rowTop.remove();
+            const nowUtc = new Date();
+            const chosen = new Date(startUtc);
+            if (!(chosen > nowUtc)) {
+                toast('Escolha um horário no futuro');
+                return;
             }
-        } catch {}
+        } catch {
+            // ignore
+        }
+        try {
+            if (mode === 'create') {
+                await fetchJson(`${apiBase}/api/book`, {
+                    method: 'POST',
+                    body: JSON.stringify({ tenantId: TENANT_ID, serviceId: svcId, startUtc, clientName: name, clientContact: contact })
+                });
+                toast('Agendado com sucesso');
+            } else if (mode === 'reschedule' || mode === 'edit') {
+                const appointmentId = document.getElementById('mApptId').value;
+                await fetchJson(`${apiBase}/api/cancel`, {
+                    method: 'POST',
+                    body: JSON.stringify({ appointmentId, reason: mode })
+                });
+                await fetchJson(`${apiBase}/api/book`, {
+                    method: 'POST',
+                    body: JSON.stringify({ tenantId: TENANT_ID, serviceId: svcId, startUtc, clientName: name, clientContact: contact })
+                });
+                toast(mode === 'reschedule' ? 'Remarcado' : 'Atualizado');
+            }
+            closeModal();
+            await loadDay();
+        } catch (error) {
+            toast('Falha: ' + error.message);
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
         document.body.classList.add('admin');
-        const d=new Date(); document.getElementById('date').value=d.toISOString().slice(0,10);
-        // fixa tema claro
-        document.documentElement.dataset.theme = 'light';
-        const date = document.getElementById('date');
-        // Atualiza ao escolher a data no calendário
-        date?.addEventListener('change', ()=> loadDay());
-        date?.addEventListener('input', ()=> loadDay());
-        document.getElementById('btnReload').addEventListener('click', loadDay);
-        document.getElementById('btnEncaixe').addEventListener('click', (e)=>{ e.preventDefault(); encaixe(); });
-        document.getElementById('fabEncaixe').addEventListener('click', (e)=>{ e.preventDefault(); encaixe(); });
-        document.getElementById('btnPrev').addEventListener('click',()=>{ const d=new Date(date.value); d.setDate(d.getDate()-1); date.value=d.toISOString().slice(0,10); loadDay();});
-        document.getElementById('btnNext').addEventListener('click',()=>{ const d=new Date(date.value); d.setDate(d.getDate()+1); date.value=d.toISOString().slice(0,10); loadDay();});
+        const dateInput = document.getElementById('date');
+        if (dateInput && !dateInput.value) {
+            const today = new Date();
+            dateInput.value = today.toISOString().slice(0, 10);
+        }
+        dateInput?.addEventListener('change', () => loadDay());
+        dateInput?.addEventListener('input', () => loadDay());
+        document.getElementById('btnReload')?.addEventListener('click', () => loadDay());
+        document.getElementById('btnEncaixe')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            encaixe();
+        });
+        document.getElementById('fabEncaixe')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            encaixe();
+        });
+        document.getElementById('btnPrev')?.addEventListener('click', () => {
+            if (!dateInput) {
+                return;
+            }
+            const current = dateInput.value ? new Date(dateInput.value) : new Date();
+            current.setDate(current.getDate() - 1);
+            dateInput.value = current.toISOString().slice(0, 10);
+            loadDay();
+        });
+        document.getElementById('btnNext')?.addEventListener('click', () => {
+            if (!dateInput) {
+                return;
+            }
+            const current = dateInput.value ? new Date(dateInput.value) : new Date();
+            current.setDate(current.getDate() + 1);
+            dateInput.value = current.toISOString().slice(0, 10);
+            loadDay();
+        });
         await ensureTenantId();
         await loadServices();
         await loadDay();
     });
 </script>
-<div id="toast" class="toast"></div>

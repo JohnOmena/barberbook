@@ -8,38 +8,48 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BarberBook — Login</title>
-    <style>
-        :root{ --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --muted:#475569; --border:#e2e8f0; --primary:#0ea5e9; }
-        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--text); display:flex; align-items:center; justify-content:center; min-height:100vh; }
-        .card { background:var(--card); padding:24px; border-radius:12px; width:100%; max-width:360px; box-shadow:0 10px 25px rgba(0,0,0,.08); border:1px solid var(--border); }
-        h1 { margin:0 0 16px; font-size:20px; }
-        label { display:block; font-size:14px; margin:12px 0 6px; color:var(--muted); }
-        input[type=text], input[type=password] { width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:#fff; color:var(--text); min-height:38px; font-weight: 400; box-sizing: border-box; }
-        button { width:100%; padding:10px 12px; margin-top:16px; background:var(--primary); border:none; color:#fff; border-radius:8px; font-weight:600; min-height:38px; }
-        .error { color:#b91c1c; font-size:14px; margin-top:8px; }
-    </style>
+    <title>Studio Winner Barbearia · Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/admin-login.css" asp-append-version="true" />
     <meta name="robots" content="noindex,nofollow" />
-    <meta name="color-scheme" content="light" />
-    <partial name="_ValidationScriptsPartial" />
-    <link rel="icon" href="data:," />
     <meta name="api-base" content="@Model.ApiBaseUrl" />
     <meta name="tenant-id" content="@Model.TenantId" />
+    <link rel="icon" href="~/img/logo.jpg" />
     <noscript>Ative JavaScript para usar o painel.</noscript>
-    </head>
-<body>
-    <div class="card">
-        <h1>Entrar</h1>
-        <form method="post">
-            <label for="username">Usuário</label>
-            <input id="username" name="Username" type="text" autocomplete="username" />
-            <label for="password">Senha</label>
-            <input id="password" name="Password" type="password" autocomplete="current-password" />
-            <button type="submit">Entrar</button>
-            @if (!string.IsNullOrEmpty(Model.Error)) { <div class="error">@Model.Error</div> }
+</head>
+<body class="login-body">
+    <div class="bg-glow"></div>
+    <main class="login-card" aria-label="Autenticação do painel">
+        <header class="card-header">
+            <span class="logo-wrap" aria-hidden="true">
+                <img src="~/img/logo.jpg" alt="Studio Winner" loading="lazy" />
+            </span>
+            <div class="brand">
+                <h1>Studio Winner Barbearia</h1>
+                <p>Painel administrativo</p>
+            </div>
+        </header>
+        <form method="post" class="login-form">
+            <div asp-validation-summary="ModelOnly" class="validation"></div>
+            <div class="field">
+                <label asp-for="Username">Usuário</label>
+                <input asp-for="Username" autocomplete="username" />
+                <span asp-validation-for="Username" class="validation"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Password">Senha</label>
+                <input asp-for="Password" type="password" autocomplete="current-password" />
+                <span asp-validation-for="Password" class="validation"></span>
+            </div>
+            <button type="submit" class="cta">Entrar</button>
         </form>
-    </div>
+        <div class="alert @(string.IsNullOrEmpty(Model.Error) ? string.Empty : "show")" role="alert">
+            <strong>Não foi possível entrar.</strong>
+            <span>@Model.Error</span>
+        </div>
+    </main>
+    <partial name="_ValidationScriptsPartial" />
 </body>
 </html>
-
-

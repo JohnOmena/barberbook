@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,10 +42,10 @@ public sealed class CreateBookingUseCase
         await _validator.ValidateAndThrowAsync(request, cancellationToken);
 
         var prof = _professionals.Query().FirstOrDefault(p => p.IsDefault && p.Active);
-        if (prof is null) throw new DomainException("Profissional padrão não encontrado.");
+        if (prof is null) throw new DomainException("Profissional padrÃ£o nÃ£o encontrado.");
 
         var service = _services.Query().FirstOrDefault(s => s.Id == request.ServiceId && s.Active);
-        if (service is null) throw new DomainException("Serviço não encontrado ou inativo.");
+        if (service is null) throw new DomainException("ServiÃ§o nÃ£o encontrado ou inativo.");
 
         var start = request.StartUtc;
         if (start.Kind != DateTimeKind.Utc)
@@ -56,9 +56,9 @@ public sealed class CreateBookingUseCase
         var exists = _appointments.Query()
             .Any(a => a.ProfessionalId == prof.Id && a.StartsAt == start && a.Status != AppointmentStatus.Cancelled);
         if (exists)
-            throw new DomainConflictException("Já existe um agendamento nesse horário.");
+            throw new DomainConflictException("JÃ¡ existe um agendamento nesse horÃ¡rio.");
 
-        // Checagem de conflito por sobreposição (ignora Cancelled e NoShow)
+        // Checagem de conflito por sobreposiÃ§Ã£o (ignora Cancelled e NoShow)
         {
             var conflict = _appointments.Query()
                 .Any(a => a.ProfessionalId == prof.Id
@@ -67,7 +67,7 @@ public sealed class CreateBookingUseCase
                        && a.StartsAt < end
                        && a.EndsAt > start);
             if (conflict)
-                throw new DomainConflictException("Já existe um agendamento que conflita com esse horário.");
+                throw new DomainConflictException("JÃ¡ existe um agendamento que conflita com esse horÃ¡rio.");
         }
 
         var appt = new Appointment(
@@ -77,7 +77,7 @@ public sealed class CreateBookingUseCase
             serviceId: service.Id,
             startsAtUtc: start,
             endsAtUtc: end,
-            status: AppointmentStatus.Confirmed,
+            status: AppointmentStatus.Pending,
             clientName: request.ClientName,
             clientContact: request.ClientContact,
             createdAtUtc: _clock.UtcNow);
@@ -88,3 +88,4 @@ public sealed class CreateBookingUseCase
         return new BookingResponse(appt.Id, appt.StartsAt, appt.EndsAt, appt.Status);
     }
 }
+

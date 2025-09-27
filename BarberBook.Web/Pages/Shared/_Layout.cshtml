@@ -11,16 +11,25 @@
     <link rel="stylesheet" href="~/BarberBook.Web.styles.css" asp-append-version="true" />
     @RenderSection("Head", required: false)
 </head>
-<body>
+<body class="@(ViewData["BodyClass"] ?? string.Empty)">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">BarberBook.Web</a>
+        <nav class="navbar navbar-expand-sm navbar-dark admin-navbar">
+            <div id="b-fj5kgq2skh" class="container admin-shell">
+                <div class="brand-header">
+                    <span class="brand-logo" aria-hidden="true">
+                        <img src="~/img/logo.jpg" alt="Studio Winner" />
+                    </span>
+                    <div class="brand-copy">
+                        <span class="brand-tag">Studio Winner</span>
+                        <span class="brand-title">Studio Winner Barbearia</span>
+                        <span class="brand-sub">Agenda em dia</span>
+                    </div>
+                </div>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
+                <div class="navbar-collapse collapse justify-content-end">
                     @if (User?.Identity?.IsAuthenticated == true)
                     {
                         <form class="d-inline" method="post" asp-page="/Admin/Index" asp-page-handler="Logout">
@@ -50,3 +59,7 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+
+
+

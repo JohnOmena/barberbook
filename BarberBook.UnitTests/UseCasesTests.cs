@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using BarberBook.Application.DTOs;
@@ -53,7 +53,7 @@ public class UseCasesTests
     }
 
     [Fact]
-    public async Task CreateBooking_CreatesConfirmedAndComputesEnd()
+    public async Task CreateBooking_CreatesPendingAndComputesEnd()
     {
         var tenantId = Guid.NewGuid();
         var prof = new Professional(Guid.NewGuid(), tenantId, "Pro", isDefault: true, active: true);
@@ -67,10 +67,10 @@ public class UseCasesTests
         var uc = new CreateBookingUseCase(profRepo, svcRepo, apptRepo, uow, validator, clock);
 
         var start = new DateTime(2025, 1, 1, 9, 0, 0, DateTimeKind.Utc);
-        var req = new CreateBookingRequest(tenantId, svc.Id, start, "João", "99999-0000");
+        var req = new CreateBookingRequest(tenantId, svc.Id, start, "JoÃ£o", "99999-0000");
         var resp = await uc.HandleAsync(req);
 
-        Assert.Equal(AppointmentStatus.Confirmed, resp.Status);
+        Assert.Equal(AppointmentStatus.Pending, resp.Status);
         Assert.Equal(start.AddMinutes(35), resp.EndsAt);
         Assert.Equal(1, uow.Saves);
     }
@@ -111,4 +111,5 @@ public class UseCasesTests
         Assert.Equal("Corte", resp.Items.First().ServiceName);
     }
 }
+
 

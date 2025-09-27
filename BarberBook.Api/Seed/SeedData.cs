@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BarberBook.Domain.Entities;
@@ -41,35 +43,35 @@ public static class SeedData
             // (no setters per domain, but constructor set implies invariant; if properties were mutable we'd update)
         }
 
-        // Services (8 items; update or insert). BufferMin=5, Price=0, Active=true
-        var desiredServices = new (string Name, int DurationMin)[]
+        // Services (8 items; update or insert). BufferMin=5, precos configurados conforme tabela base
+        var desiredServices = new (string Name, int DurationMin, decimal Price)[]
         {
-            ("Corte de Cabelo", 30),
-            ("Barba", 30),
-            ("Cabelo e Barba", 60),
-            ("Sobrancelha", 15),
-            ("Pigmentação", 30),
-            ("Hidratação", 30),
-            ("Corte Infantil", 30),
-            ("Corte Máquina", 20)
+            ("Degrad\u00EA na Zero", 30, 25m),
+            ("Degrad\u00EA Navalhado (com navalha)", 40, 30m),
+            ("Corte Social (M\u00E1quina + Tesoura)", 20, 23m),
+            ("Corte S\u00F3 M\u00E1quina", 20, 20m),
+            ("Corte na Tesoura", 30, 35m),
+            ("Barba", 20, 20m),
+            ("Acabamento (Pezinho) + Sobrancelha", 10, 10m),
+            ("Combo: Cabelo + Barba", 50, 45m)
         };
 
         var servicesBySlug = await db.Services
             .Where(s => s.TenantId == tenant.Id)
             .ToDictionaryAsync(s => s.Slug);
 
-        foreach (var (name, duration) in desiredServices)
+        foreach (var (name, duration, price) in desiredServices)
         {
             var slug = ToKebabCase(name);
             if (servicesBySlug.TryGetValue(slug, out var svc))
             {
                 // Update if any difference (construct new and replace tracked entity values)
-                var updated = new Service(svc.Id, tenant.Id, name, slug, duration, 5, 0m, true);
+                var updated = new Service(svc.Id, tenant.Id, name, slug, duration, 5, price, true);
                 db.Entry(svc).CurrentValues.SetValues(updated);
             }
             else
             {
-                db.Services.Add(new Service(Guid.NewGuid(), tenant.Id, name, slug, duration, 5, 0m, true));
+                db.Services.Add(new Service(Guid.NewGuid(), tenant.Id, name, slug, duration, 5, price, true));
             }
         }
 
@@ -136,10 +138,23 @@ public static class SeedData
 
     private static string ToKebabCase(string input)
     {
-        var lower = input.Trim().ToLowerInvariant();
-        lower = Regex.Replace(lower, @"[^a-z0-9\s-]", "");
-        lower = Regex.Replace(lower, @"[\s_]+", "-");
-        lower = Regex.Replace(lower, @"-+", "-");
-        return lower.Trim('-');
+        if (string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        var normalized = input.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(normalized.Length);
+        foreach (var ch in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark)
+            {
+                sb.Append(ch);
+            }
+        }
+
+        var cleaned = sb.ToString().Normalize(NormalizationForm.FormC);
+        cleaned = Regex.Replace(cleaned, @"[^a-z0-9\s-]", "");
+        cleaned = Regex.Replace(cleaned, @"[\s_]+", "-");
+        cleaned = Regex.Replace(cleaned, @"-+", "-");
+        return cleaned.Trim('-');
     }
 }

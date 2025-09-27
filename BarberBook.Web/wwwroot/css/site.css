@@ -1,4 +1,4 @@
-html {
+﻿html {
   font-size: 14px;
 }
 
@@ -28,4 +28,116 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+.admin-navbar {
+  background: #050505;
+  border-bottom: 1px solid rgba(255, 204, 77, 0.16);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  padding: 12px 0;
+  margin-bottom: 24px;
+}
+
+.admin-navbar .admin-shell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  color: #f5efe1;
+}
+
+.admin-shell .brand-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-shell .brand-logo {
+  display: inline-flex;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 204, 77, 0.25);
+  background: rgba(255, 204, 77, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 204, 77, 0.08);
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-shell .brand-logo img {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.admin-shell .brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #f5efe1;
+}
+
+.admin-shell .brand-tag {
+  font-size: 0.75rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255, 204, 77, 0.7);
+}
+
+.admin-shell .brand-title {
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #ffcc4d;
+}
+
+.admin-shell .brand-sub {
+  font-size: 0.78rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255, 244, 214, 0.65);
+}
+
+.admin-navbar .navbar-collapse .btn {
+  border-color: rgba(255, 204, 77, 0.4) !important;
+  color: rgba(255, 204, 77, 0.85) !important;
+  background: rgba(255, 204, 77, 0.05);
+}
+
+body.admin .admin-content {
+  background: rgba(10, 10, 10, 0.86);
+  border: 1px solid rgba(255, 204, 77, 0.12);
+  border-radius: 28px;
+  padding: clamp(24px, 4vw, 42px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  color: #f5efe1;
+  max-width: min(960px, 100%);
+  margin-bottom: 48px;
+}
+
+body.admin .admin-content a {
+  color: #ffcc4d;
+}
+
+@media (max-width: 576px) {
+  .admin-navbar .admin-shell {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .admin-shell .brand-header {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-navbar .navbar-collapse {
+    width: 100%;
+    justify-content: center;
+  }
+
+  body.admin .admin-content {
+    padding: 20px 18px;
+  }
 }

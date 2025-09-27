@@ -1,4 +1,4 @@
-using BarberBook.Api.Contracts;
+﻿using BarberBook.Api.Contracts;
 using BarberBook.Application.DTOs;
 using BarberBook.Application.UseCases;
 using FluentValidation;
@@ -31,7 +31,7 @@ public static class BookingEndpoints
         .WithOpenApi(op =>
         {
             op.Summary = "Cria um agendamento";
-            op.Description = "Cria um novo agendamento Confirmed calculando o término (duração+buffer).";
+            op.Description = "Cria um novo agendamento Pending calculando o tÃ©rmino (duraÃ§Ã£o+buffer).";
             return op;
         })
         .WithOpenApi(op =>
@@ -61,7 +61,7 @@ public static class BookingEndpoints
                     ["id"] = new OpenApiString("BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB"),
                     ["startsAt"] = new OpenApiString("2025-08-31T12:00:00Z"),
                     ["endsAt"] = new OpenApiString("2025-08-31T12:35:00Z"),
-                    ["status"] = new OpenApiString("Confirmed")
+                    ["status"] = new OpenApiString("Pending")
                 };
             }
             return op;
@@ -72,8 +72,8 @@ public static class BookingEndpoints
             {
                 op.Responses["400"].Content["application/json"].Example = new OpenApiObject
                 {
-                    ["title"] = new OpenApiString("Parâmetro inválido"),
-                    ["detail"] = new OpenApiString("status inválido")
+                    ["title"] = new OpenApiString("ParÃ¢metro invÃ¡lido"),
+                    ["detail"] = new OpenApiString("status invÃ¡lido")
                 };
             }
             return op;
@@ -111,7 +111,7 @@ public static class BookingEndpoints
         app.MapPost("/api/appointments/{id:guid}/status/{status}", async Task<Results<NoContent, BadRequest<ProblemDetails>>> (HttpContext http, Guid id, string status, UpdateAppointmentStatusUseCase uc, CancellationToken ct) =>
         {
             if (!Enum.TryParse<BarberBook.Domain.Enums.AppointmentStatus>(status, ignoreCase: true, out var st))
-                return TypedResults.BadRequest(new ProblemDetails { Title = "Parâmetro inválido", Detail = "status inválido" });
+                return TypedResults.BadRequest(new ProblemDetails { Title = "ParÃ¢metro invÃ¡lido", Detail = "status invÃ¡lido" });
             var updatedBy = http.Request.Headers.TryGetValue("X-User", out var hv) ? hv.ToString() : null;
             await uc.HandleAsync(id, st, updatedBy, ct);
             return TypedResults.NoContent();
@@ -121,7 +121,7 @@ public static class BookingEndpoints
         .WithOpenApi(op =>
         {
             op.Summary = "Atualiza status do agendamento";
-            op.Description = "Transições válidas: Confirmed/Pending→CheckIn, CheckIn→InService, InService→Done, Confirmed→NoShow (após 15min).";
+            op.Description = "TransiÃ§Ãµes vÃ¡lidas: Confirmed/Pendingâ†’CheckIn, CheckInâ†’InService, InServiceâ†’Done, Confirmedâ†’NoShow (apÃ³s 15min).";
             return op;
         });
 
@@ -142,3 +142,4 @@ public static class BookingEndpoints
         return app;
     }
 }
+
